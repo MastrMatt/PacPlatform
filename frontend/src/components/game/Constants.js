@@ -13,8 +13,14 @@ export const wallColor = "#342DCA";
 
 // one block size, the size of the pacman and the walls in pixels
 export const oneBlockSize = 20;
-export const wallSpaceWidth = oneBlockSize / 1.7;
+export const wallSpaceWidth = oneBlockSize / 1.5;
 export const wallOffset = (oneBlockSize - wallSpaceWidth) / 2 + 1;
 export const wallInnerColor = "black";
 export const collisionThreshold = 1;
 
+export const pacManFPS = 10;
+export const pacManHeight = oneBlockSize;
+export const pacManWidth = oneBlockSize;
+
+// 1/5 of the block size per frame
+export const pacManSpeed = oneBlockSize/5;

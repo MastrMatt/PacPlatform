@@ -7,6 +7,7 @@ import animationGif from "../../assets/animations.gif";
 import ghostImage from "../../assets/ghost.png";
 
 import * as Constants from "./Constants";
+import Pacman from "./Pacman";
 
 
 function Game() {
@@ -16,11 +17,17 @@ function Game() {
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
+        const pacmanFrames = document.getElementById("animation");
+        const ghostFrames = document.getElementById("ghosts");
 
+
+        let pacman;
         let fps = Constants.fps;
         let wallColor = Constants.wallColor
         let oneBlockSize = Constants.oneBlockSize;
         let wallSpaceWidth = Constants.wallSpaceWidth;
+        let wallOffset = Constants.wallOffset
+        let wallInnerColor = Constants.wallInnerColor;
 
         const DIRECTION_RIGHT = Constants.DIRECTION_RIGHT;
         const DIRECTION_UP = Constants.DIRECTION_UP;
@@ -28,10 +35,7 @@ function Game() {
         const DIRECTION_BOTTOM = Constants.DIRECTION_BOTTOM;
 
 
-        let wallOffset = Constants.wallOffset
 
-        let wallInnerColor = Constants.wallInnerColor;
-        
         // define the pacman maps
         // empty space = 0, wall = 1, food = 2,
         // 23 X 21 array
@@ -69,6 +73,8 @@ function Game() {
                 
         let update = () => {
             // ? Todo
+
+            pacman
         }
 
         
@@ -138,6 +144,7 @@ function Game() {
             // clear the canvas with black color
             createRect(0, 0, canvas.width, canvas.height, "black");
             drawWalls(); 
+            pacman.draw()
         };
 
         let gameLoop = () => {
@@ -145,6 +152,17 @@ function Game() {
             draw();
         };
 
+        let createNewPacman = () => {
+            pacman = new Pacman(
+                oneBlockSize,
+                oneBlockSize,
+                Constants.pacManWidth,
+                Constants.pacManHeight,
+                Constants.pacManSpeed,
+            );
+        };
+
+        createNewPacman();
         const intervalId = setInterval(gameLoop, 1000 / Constants.fps);
 
         // Cleanup function to clear interval when component unmounts
@@ -155,7 +173,7 @@ function Game() {
 
     return (    
         <>
-            <canvas ref = {canvasRef} id="game_canvas" width="500" height="500" style={{ backgroundColor: "black" }}> </canvas>
+            <canvas ref = {canvasRef} id="gameCanvas" width="500" height="500" style={{ backgroundColor: "black" }}> </canvas>
 
             <div style={{display : "none"}}>
 
