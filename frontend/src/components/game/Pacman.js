@@ -9,8 +9,11 @@ export default class Pacman {
         this.height = height;
         this.speed = speed;
         this.direction = Constants.DIRECTION_RIGHT;
-        this.curFrame = 1;
+        this.nextDirection = Constants.DIRECTION_RIGHT;
+        this.currentFrame = 1;
         this.frameCount = 7;
+        this.score = 0;
+        this.lives = 3;
 
         // this is to handle the pacman animation frames
         setInterval(() => {
@@ -28,10 +31,6 @@ export default class Pacman {
             this.moveBackwards();
         }
 
-
-    }
-
-    eat() {
 
     }
 
@@ -73,36 +72,81 @@ export default class Pacman {
 
     checkCollisions() {
         let isCollided = false;
-        let collisionThreshold = Constants.collisionThreshold;  
+        let collisionThreshold = 1;  
+
+        let map = Constants.map;
+        let oneBlockSize = Constants.oneBlockSize;
 
         if (
-            map[parseInt(this.y / oneBlockSize)][
-                parseInt(this.x / oneBlockSize)
+            map[this.getMapY()][
+                this.getMapX()
             ] == 1 ||
-            map[parseInt(this.y / oneBlockSize + collisionThreshold)][
-                parseInt(this.x / oneBlockSize)
+            map[this.getMapYBottomSide()][
+                this.getMapX()
             ] == 1 ||
-            map[parseInt(this.y / oneBlockSize)][
-                parseInt(this.x / oneBlockSize + collisionThreshold)
+            map[this.getMapY()][
+                this.getMapXRightSide()
             ] == 1 ||
-            map[parseInt(this.y / oneBlockSize + collisionThreshold)][
-                parseInt(this.x / oneBlockSize + collisionThreshold)
+            map[this.getMapYBottomSide()][
+                this.getMapXRightSide()
             ] == 1
         ) {
             isCollided = true;
         }
 
+
         return isCollided;
+    }
+    
+    checkGhostCollision(ghosts) {
+        for (let i = 0; i < ghosts.length; i++) {
+            let ghost = ghosts[i];
+            if (
+                ghost.getMapX() == this.getMapX() &&
+                ghost.getMapY() == this.getMapY()
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
-    checkGhostCollision() {
+    getMapX() {
+        let oneBlockSize = Constants.oneBlockSize;
+        let mapX = parseInt(this.x / oneBlockSize);
+        return mapX;
+    }
 
+    getMapY() {
+        let oneBlockSize = Constants.oneBlockSize;
+        let mapY = parseInt(this.y / oneBlockSize);
+        return mapY;
+    }
+
+    getMapXRightSide() {
+        let oneBlockSize = Constants.oneBlockSize;
+        let mapX = parseInt((this.x * 0.99999 + oneBlockSize) / oneBlockSize);
+        return mapX;
+    }
+
+    getMapYBottomSide() {
+        let oneBlockSize = Constants.oneBlockSize;
+        let mapY = parseInt((this.y * 0.99999 + oneBlockSize) / oneBlockSize);
+        return mapY;
     }
 
     changeDirectionIfPossible() {
-
-
+        if (this.direction == this.nextDirection) return;
+        let tempDirection = this.direction;
+        this.direction = this.nextDirection;
+        this.moveForward();
+        if (this.checkCollisions()) {
+            this.moveBackwards();
+            this.direction = tempDirection;
+        } else {
+            this.moveBackwards();
+        }
     }
 
     
@@ -111,42 +155,37 @@ export default class Pacman {
             this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
     }
 
-
-
-    // !Fix draw
     draw() {
 
         // fetch the canvas context
         const canvasContext = document.getElementById("gameCanvas").getContext("2d");
         const pacmanFrames = document.getElementById("animation");
-        const ghostFrames = document.getElementById("ghosts");
 
         let oneBlockSize = Constants.oneBlockSize;
-
 
         // save the canvas context, useful to restore the canvas context later
         canvasContext.save();
 
         // translate the canvas context to the center of the pacman
         canvasContext.translate(
-            this.x + oneBlockSize / 2,
-            this.y + oneBlockSize / 2
+            this.x + this.width / 2,
+            this.y + this.height / 2
         );
 
         // convert the angle to radians first
         canvasContext.rotate((this.direction * 90 * Math.PI) / 180);
         // translate the canvas context back to the top left corner of the pacman
         canvasContext.translate(
-            -this.x - oneBlockSize / 2,
-            -this.y - oneBlockSize / 2
+            -this.x - this.width / 2,
+            -this.y - this.height / 2
         );
         // draw the pacman
         canvasContext.drawImage(
             pacmanFrames,
-            (this.currentFrame - 1) * oneBlockSize,
+            (this.currentFrame - 1) * this.width,
             0,
-            oneBlockSize,
-            oneBlockSize,
+            this.width,
+            this.height,
             this.x,
             this.y,
             this.width,
@@ -156,25 +195,29 @@ export default class Pacman {
         canvasContext.restore();
     }
 
-    // this is to get the pacman's position in the array map
-    getMapX() {
-        return Math.floor(this.x / Constants.oneBlockSize);
+    eat() {
+        let map = Constants.map;
+        
+        for (let i = 0; i < map.length; i++) {
+            for (let j = 0; j < map[0].length; j++) {
+                if (
+                    map[i][j] == 2 &&
+                    this.getMapX() == j &&
+                    this.getMapY() == i
+                ) {
+                    map[i][j] = 3;
+                    this.score++;
+                }
+            }
+        }
     }
 
-    // this is to get the pacman's position in the array map
-    getMapY() {
-        return Math.floor(this.y / Constants.oneBlockSize);
+    reduceLives(reduceNum) {
+        this.lives -= reduceNum;
     }
 
-    getMapXRightSide() {
-        let mapX = parseInt((this.x * 0.99 + oneBlockSize) / oneBlockSize);
-        return mapX;
+    resetPosition() {
+        
     }
-
-    getMapYRightSide() {
-        let mapY = parseInt((this.y * 0.99 + oneBlockSize) / oneBlockSize);
-        return mapY;
-    }
-
 
 }

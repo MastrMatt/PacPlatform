@@ -5,6 +5,13 @@
     It is used to set the default font, size, and other global styles.
 */
 
+/* pacman font */
+@font-face {
+  font-family: "PacFont";
+  src: url("./fonts/Emulogic-zrEw.ttf")
+}
+
+
 @font-face {
   font-family: "Dongle Light";
   src: url("./fonts/Dongle-Light.ttf")
