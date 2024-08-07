@@ -38,7 +38,9 @@ export default class Ghost {
 
     
     changeRandomDirection() {
-        this.randomTargetIndex = parseInt(Math.random() * this.randomTargetsForGhosts.length);
+        this.randomTargetIndex += 1;
+        this.randomTargetIndex %= this.randomTargetsForGhosts.length;
+        console.log(this.randomTargetIndex);
     }
 
     draw() {
@@ -62,6 +64,18 @@ export default class Ghost {
         canvasContext.restore();
     }
 
+    
+    isInRange() {
+        let xDistance = Math.abs(this.pacman.getMapX() - this.getMapX());
+        let yDistance = Math.abs(this.pacman.getMapY() - this.getMapY());
+        if (
+            this.range >= Math.sqrt(xDistance * xDistance + yDistance * yDistance)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     moveProcess() {
         if (this.isInRange()) {
             this.target = this.pacman;
@@ -74,17 +88,6 @@ export default class Ghost {
             this.moveBackwards();
             return;
         }
-    }
-
-    isInRange() {
-        let xDistance = Math.abs(this.pacman.getMapX() - this.getMapX());
-        let yDistance = Math.abs(this.pacman.getMapY() - this.getMapY());
-        if (
-            this.range >= Math.sqrt(xDistance * xDistance + yDistance * yDistance)
-        ) {
-            return true;
-        }
-        return false;
     }
 
     

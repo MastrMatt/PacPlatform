@@ -5,6 +5,9 @@ import {useState, useEffect, useRef} from "react";
 import animationGif from "../../assets/animations.gif";
 import ghostImage from "../../assets/ghost.png";
 
+// import css
+import "./Game.css";
+
 import * as Constants from "./Constants";
 import Pacman from "./Pacman";
 import Ghost from "./Ghost";
@@ -76,7 +79,6 @@ function Game() {
                 onGhostCollision();
             }
 
-            console.log(foodCount);
             if (pacman.score >= foodCount) {
                 gameWinner();
             }
@@ -332,8 +334,8 @@ function Game() {
 
 
     return (    
-        <>
-            <canvas ref = {canvasRef} id="gameCanvas" width="500" height="500" style={{ backgroundColor: "black" }}> </canvas>
+        <div className="gameContainer">
+            <canvas ref = {canvasRef} id="gameCanvas" width="500" height="500"> </canvas>
 
             <div style={{display : "none"}}>
 
@@ -342,7 +344,7 @@ function Game() {
 
             </div>
             
-        </>
+        </div>
     )
 }
 

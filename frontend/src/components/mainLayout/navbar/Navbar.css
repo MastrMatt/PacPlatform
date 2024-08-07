@@ -28,16 +28,16 @@
 
 .navBar {
     top: 0;
-    width: 8rem;
+    width:10%;
     height: 100%;
     z-index: 1000;
     position: fixed;
-    background-image: linear-gradient(to bottom, #4CA2CD, #67B26F);
+    background-image: linear-gradient(45deg, #006699, #0088CC, #005577);
     transition: width 200ms ease;
 }
-
+    
 .navBar:hover {
-    width: 16rem;
+    width: 20%;
 }
 
 

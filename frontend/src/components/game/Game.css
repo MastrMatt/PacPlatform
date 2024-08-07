@@ -1,0 +1,15 @@
+
+.gameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    background-color: black;
+    width: 100%;
+    height: 100vh;  
+}
+
+/* It's cool that css automatially resizes not only the canvas but also the proportions  */
+#gameCanvas {
+    flex: 0 0 45%;
+    background-color: black;
+}

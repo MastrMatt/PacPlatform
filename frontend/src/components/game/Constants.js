@@ -17,7 +17,7 @@ export const wallSpaceWidth = oneBlockSize / 1.5;
 export const wallOffset = (oneBlockSize - wallSpaceWidth) / 2 + 1;
 export const wallInnerColor = "black";
 
-export const pacManFPS = 10;
+export const pacManFPS = 20;
 export const pacManHeight = oneBlockSize;
 export const pacManWidth = oneBlockSize;
 

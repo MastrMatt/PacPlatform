@@ -10,21 +10,11 @@ import {
 
 import "./App.css";
 
-import Navbar from "./components/navbar/Navbar";
+import MainLayout from "./components/mainLayout/MainLayout"
 import Game from "./components/game/Game"
 
 function App() {
   
-  // this is a component
-  const MainLayout = ({children}) => (
-    <>
-      <Navbar />
-      <main>{children}</main>
-    </>     
-
-  )
-
- 
   return (
     <MainLayout>
       <Routes>
