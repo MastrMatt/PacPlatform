@@ -12,6 +12,7 @@ import * as Constants from "./Constants";
 import Pacman from "./Pacman";
 import Ghost from "./Ghost";
 
+import { BACKEND_URL } from "../../config/Constants";
 
 function Game() {
 
@@ -322,7 +323,15 @@ function Game() {
 
             return foodCount;
         }
-            
+        
+        // remember fetch is asynchornous, async/await and check return code
+        // make api request to text express
+        fetch(BACKEND_URL + "/")
+            .then((res) => res.json())
+            .then((data) => console.log(data));
+
+
+
         foodCount = getFoodCount(map);
         pacman = createNewPacman();
         createNewGhosts();

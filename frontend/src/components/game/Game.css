@@ -10,6 +10,6 @@
 
 /* It's cool that css automatially resizes not only the canvas but also the proportions  */
 #gameCanvas {
-    flex: 0 0 45%;
+    flex: 0 0 40%;
     background-color: black;
 }
