@@ -1,0 +1,29 @@
+
+/* 
+    This file is used to style the entire application. 
+    It is the first file to be loaded by the application.
+    It is used to set the default font, size, and other global styles.
+*/
+
+/* pacman font */
+@font-face {
+    font-family: "PacFont";
+    src: url("./fonts/Emulogic-zrEw.ttf")
+  }
+  
+  @font-face {
+    font-family: "Dongle Light";
+    src: url("./fonts/Dongle-Light.ttf")
+  }
+  
+  :root{
+    font-family: "Dongle Light", Arial, sans-serif;
+    font-size: 16px;  
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  

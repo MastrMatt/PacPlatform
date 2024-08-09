@@ -1,0 +1,13 @@
+
+@hostname = http://localhost:42069
+
+get {{hostname}}
+
+### 
+
+post {{hostname}}/send
+Content-Type: application/json
+
+{
+  "message": "HIHIHIAHSD"
+}
