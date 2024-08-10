@@ -10,6 +10,7 @@ import {
   FaSearch,
   FaConnectdevelop,
 } from "react-icons/fa";
+
 import { NavLink } from "react-router-dom";
 
 import "./Navbar.css";

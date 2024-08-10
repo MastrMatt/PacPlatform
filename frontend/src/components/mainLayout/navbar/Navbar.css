@@ -1,88 +1,78 @@
 .logoText {
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
-    margin: 0;
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+  margin: 0;
 }
 
 #logoLink {
-    filter: grayscale(0%) opacity(1);
-    font-size: 1.5rem;
+  filter: grayscale(0%) opacity(1);
+  font-size: 1.5rem;
 }
-
 
 .navBarItem {
-    width: 100%;
+  width: 100%;
 }
 
-
-.navIcons { 
-    /* 2 + 3 + 2 = 8rem */
-    min-width: 2rem;
-    max-width: 2rem;
-    min-height: 2rem;
-    max-height: 2rem;
-    margin-left: 3rem;
+.navIcons {
+  /* 2 + 3 + 2 = 8rem */
+  min-width: 2rem;
+  max-width: 2rem;
+  min-height: 2rem;
+  max-height: 2rem;
+  margin-left: 3rem;
 }
-
 
 .navBar {
-    top: 0;
-    width:10%;
-    height: 100%;
-    z-index: 1000;
-    position: fixed;
-    background-image: linear-gradient(45deg, #006699, #0088CC, #005577);
-    transition: width 200ms ease;
-}
-    
-.navBar:hover {
-    width: 20%;
+  top: 0;
+  width: 10%;
+  height: 100%;
+  z-index: 1000;
+  position: fixed;
+  background-image: linear-gradient(45deg, #006699, #0088cc, #005577);
+  transition: width 200ms ease;
 }
 
+.navBar:hover {
+  width: 20%;
+}
 
 .navBarNav {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
 
-    display: flex;
-    list-style: none;
-    flex-direction: column;
-    align-items: center;
-  
+  display: flex;
+  list-style: none;
+  flex-direction: column;
+  align-items: center;
 }
 
 .navLink {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    text-decoration: none;
-    color: black;
-    padding: 1.5rem 0;
-    transition: 300ms;
-    filter: grayscale(100%) opacity(0.8);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  text-decoration: none;
+  padding: 1.5rem 0;
+  transition: 300ms;
+  filter: grayscale(100%) opacity(0.8);
 }
 
 .navLink:hover {
-    filter: grayscale(0%) opacity(1);
-    background-color: #F0ECEC;
-    color: black;
+  filter: grayscale(0%) opacity(1);
+  background-color: #f0ecec;
 }
-
 
 .navLink span {
-    display: none;
-    font-size: 1.7rem;
+  display: none;
+  font-size: 1rem;
 }
 
+.navBar:hover .navLink span {
+  display: inline-block;
+  margin: 0rem 1rem;
 
-.navBar:hover .navLink span  {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-
-    min-height: 2rem;
-    max-height: 2rem;
+  min-height: 2rem;
+  max-height: 2rem;
 }
