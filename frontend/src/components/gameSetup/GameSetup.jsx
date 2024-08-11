@@ -29,10 +29,13 @@ import { CircleAlert } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { io } from "socket.io-client";
+import { Navigate, useNavigate } from "react-router-dom";
+import Game from "../game/Game";
 
 function GameSetup() {
   const [roomID, setRoomID] = useState(null);
-  const [IDError, setIDError] = useState(true);
+  const [startGame, setStartGame] = useState(false);
+  const navigate = useNavigate();
 
   const roomIDAvailable = async (roomID) => {
     // TODO: Check if roomID is available
@@ -40,6 +43,8 @@ function GameSetup() {
   };
 
   const roomIDCreated = async (roomID) => {
+    // TODO: Check if roomID has already been created
+
     return true;
   };
 
@@ -97,13 +102,19 @@ function GameSetup() {
   // 3. need a submit handler if validation passes
   const createFormSubmit = (values) => {
     console.log(values);
+    setRoomID(values.roomID);
+    setStartGame(true);
   };
 
   const joinFormSubmit = (values) => {
     console.log(values);
+    setRoomID(values.roomID);
+    setStartGame(true);
   };
 
-  return (
+  return startGame ? (
+    <Game roomID={roomID} />
+  ) : (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Card className="w-full max-w-3xl m-4">
         <CardHeader>

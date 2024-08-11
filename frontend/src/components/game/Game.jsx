@@ -13,8 +13,9 @@ import Pacman from "./Pacman";
 import Ghost from "./Ghost";
 
 import { BACKEND_URL } from "../../config/Constants";
+import { useParams } from "react-router-dom";
 
-function Game() {
+function Game({ roomID }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -315,10 +316,20 @@ function Game() {
     createNewGhosts();
     gameLoopInterval = setInterval(gameLoop, 1000 / Constants.fps);
 
+    /*  how the Multiplayer version of the game will work
+  1. create a socket connection to the server
+  3. client listens for game state
+  4. client updates game state
+  5. client emits keypresses to server
+  6. server listens for keypresses
+  7. server updates game state
+  8. server emits game state to all clients in the room
+  */
+
     // test socketio
     const socket = io(BACKEND_URL);
 
-    socket.emit("joinRoom", "room1");
+    socket.emit("joinRoom", roomID);
 
     socket.on("message", (message) => {
       console.log(message);

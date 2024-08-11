@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/Home" element={<GameSetup />} />
 
-        <Route path="/game/:roomId" element={<Game />} />
+        <Route path="/game/:roomID" element={<Game />} />
 
         {/* <Route path="/FriendRequests" element={<FollowRequests />} /> */}
 
