@@ -12,9 +12,9 @@ function App() {
   return (
     <MainLayout>
       <Routes>
-        <Route path="/" element={<Game />} />
-
         <Route path="/Home" element={<GameSetup />} />
+
+        <Route path="/game/:roomId" element={<Game />} />
 
         {/* <Route path="/FriendRequests" element={<FollowRequests />} /> */}
 
