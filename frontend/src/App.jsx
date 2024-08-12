@@ -2,8 +2,6 @@ import { useState } from "react";
 
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 
-import "./App.css";
-
 import MainLayout from "./components/mainLayout/MainLayout";
 import Game from "./components/game/Game";
 import GameSetup from "./components/gameSetup/GameSetup";
