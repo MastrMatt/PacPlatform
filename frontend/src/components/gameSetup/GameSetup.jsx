@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,18 +25,16 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { CircleAlert } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-import { io } from "socket.io-client";
-import { Navigate, useNavigate } from "react-router-dom";
 import Game from "../game/Game";
 
 function GameSetup() {
+  // ! Use proper user auth when DB is implemented
+
   const [roomID, setRoomID] = useState(null);
+  const [gameType, setGameType] = useState(null);
   const [numPlayers, setNumPlayers] = useState(0);
+
   const [startGame, setStartGame] = useState(false);
-  const navigate = useNavigate();
 
   const roomIDAvailable = async (roomID) => {
     // TODO: Check if roomID is available
@@ -105,18 +103,19 @@ function GameSetup() {
     console.log(values);
     setRoomID(values.roomID);
     setNumPlayers(values.numPlayers);
+    setGameType("create");
     setStartGame(true);
   };
 
   const joinFormSubmit = (values) => {
     console.log(values);
     setRoomID(values.roomID);
-    setNumPlayers(values.numPlayers);
+    setGameType("join");
     setStartGame(true);
   };
 
   return startGame ? (
-    <Game roomID={roomID} numPlayers={numPlayers} />
+    <Game gameType={gameType} roomID={roomID} numPlayers={numPlayers} />
   ) : (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Card className="w-full max-w-3xl m-4">

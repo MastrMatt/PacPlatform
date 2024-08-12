@@ -10,9 +10,13 @@ import * as Constants from "./Constants";
 
 import { BACKEND_URL } from "../../config/Constants";
 
-function Game({ roomID, numPlayers }) {
+function Game({ gameType, roomID, numPlayers }) {
   const [loadingGame, setLoadingGame] = useState(true);
+  const ID = useRef("");
+
   const canvasRef = useRef(null);
+  const pacmanFramesRef = useRef(null);
+  const ghostFramesRef = useRef(null);
 
   useEffect(() => {
     let wallColor = Constants.wallColor;
@@ -21,6 +25,13 @@ function Game({ roomID, numPlayers }) {
     let wallOffset = Constants.wallOffset;
     let wallInnerColor = Constants.wallInnerColor;
 
+    let canvas = canvasRef.current;
+    let ctx = canvas.getContext("2d");
+    let pacmanFrames = pacmanFramesRef.current;
+    let ghostFrames = ghostFramesRef.current;
+
+    console.log(pacmanFrames);
+
     //  ! the map with the food will be passed in from the backend, remove extra css from project
 
     const DIRECTION_RIGHT = Constants.DIRECTION_RIGHT;
@@ -28,25 +39,28 @@ function Game({ roomID, numPlayers }) {
     const DIRECTION_LEFT = Constants.DIRECTION_LEFT;
     const DIRECTION_BOTTOM = Constants.DIRECTION_BOTTOM;
 
-    // test socketio
     const socket = io(BACKEND_URL);
+    ID.current = "ID-" + Date.now();
 
-    socket.emit("joinRoom", {
-      roomID: roomID,
-      numPlayers: numPlayers,
-    });
+    if (gameType === "create") {
+      socket.emit("createRoom", {
+        ID: ID.current,
+        roomID: roomID,
+        numPlayers: numPlayers,
+      });
+    } else if (gameType === "join") {
+      socket.emit("joinRoom", {
+        ID: ID.current,
+        roomID: roomID,
+      });
+    }
 
-    socket.on("sucessJoinRoom", (message) => {
-      console.log(message);
+    socket.on("allPlayersJoined", (message) => {
+      // start the game
       setLoadingGame(false);
     });
 
     socket.on("gameUpdate", (gameState) => {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      const pacmanFrames = document.getElementById("animation");
-      const ghostFrames = document.getElementById("ghosts");
-
       draw();
       console.log(gameState);
     });
@@ -216,10 +230,12 @@ function Game({ roomID, numPlayers }) {
     return () => {
       socket.disconnect();
     };
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, [loadingGame]);
 
   return loadingGame ? (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex flex-col gap-4 justify-center items-center min-h-screen">
+      <h1 className="text-3xl font-bold pb-10">Room ID: {roomID} </h1>
+      <h1 className="text-3xl font-bold">Waiting for all players ...</h1>
       <LoaderCircle className="w-10 h-10 animate-spin" />
     </div>
   ) : (
@@ -232,8 +248,8 @@ function Game({ roomID, numPlayers }) {
       ></canvas>
 
       <div style={{ display: "none" }}>
-        <img src={animationGif} id="animation" alt="" />
-        <img src={ghostImage} id="ghosts" alt="" />
+        <img src={animationGif} ref={pacmanFramesRef} alt="" />
+        <img src={ghostImage} ref={ghostFramesRef} alt="" />
       </div>
     </div>
   );

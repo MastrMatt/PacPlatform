@@ -6,6 +6,9 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { fps, map, oneBlockSize } from "./pacman/Constants.js";
 
+import Pacman from "./pacman/Pacman.js";
+import Ghost from "./pacman/Ghost.js";
+
 const app = express();
 
 const corsOptions = {
@@ -36,30 +39,68 @@ httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const gameRooms = {};
+const gameStateInit = () => {};
+
+const gameRooms = [];
 // socket is the connection to the client
 io.on("connection", (socket) => {
-  console.log("A user connected");
+  socket.on("createRoom", ({ ID, roomID, numPlayers }) => {
+    gameRooms[roomID] = {
+      players: [],
+      numPlayers: numPlayers,
+      gameState: {},
+    };
 
-  socket.on("joinRoom", ({ roomID, numPlayers }) => {
-    if (gameRooms[roomID] == undefined) {
-      gameRooms[roomID] = {
-        players: [],
-      };
-    }
-
-    gameRooms[roomID].players.push(socket.id);
+    gameRooms[roomID].players.push(ID);
     socket.join(roomID);
 
-    console.log("Player joined room: " + roomID);
-    console.log("Players to join: " + numPlayers);
-    io.to("room1").emit("message", "Room message from server");
+    // if a single player game, start the game
+    if (numPlayers == 1) {
+      gameRooms[roomID].gameState = gameStateInit();
+
+      // start the game
+      io.to(roomID).emit(
+        "allPlayersJoined",
+        "All players have joined the room"
+      );
+    }
+    console.log(gameRooms);
+  });
+
+  socket.on("joinRoom", ({ ID, roomID }) => {
+    gameRooms[roomID].players.push(ID);
+    socket.join(roomID);
+
+    // check if enough players have joined the room
+    if (gameRooms[roomID].players.length == gameRooms[roomID].numPlayers) {
+      console.log("all players have joined the room");
+
+      // initialize the game state
+      gameRooms[roomID].gameState = gameStateInit();
+
+      io.to(roomID).emit(
+        "allPlayersJoined",
+        "All players have joined the room"
+      );
+    }
+
+    console.log(gameRooms);
   });
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
 });
+
+let serverGameLoop = () => {
+  // loop through all rooms and check if all players have joined
+  for (let room in gameRooms) {
+    if (gameRooms[room].players.length == gameRooms[room].numPlayers) {
+      // start the game
+      io.to(room).emit("gameUpdate", "Game is running");
+    }
+  }
+};
 
 /*  how the Multiplayer version of the game will work
   1. create a socket connection to the server
@@ -95,7 +136,6 @@ let randomTargetsForGhosts = [
   },
 ];
 
-// * TODO, move updates to the backend and use websockets to update the frontend
 let update = () => {
   pacman.moveProcess();
   pacman.eat();
@@ -168,11 +208,6 @@ let createNewGhosts = () => {
     );
     ghosts.push(ghost);
   }
-};
-
-let serverGameLoop = () => {
-  console.log("Server game loop");
-  // io.to("room1").emit("gameState", gameState);
 };
 
 let gameLoopInterval = setInterval(serverGameLoop, 1000 / fps);
