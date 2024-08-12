@@ -34,6 +34,7 @@ import Game from "../game/Game";
 
 function GameSetup() {
   const [roomID, setRoomID] = useState(null);
+  const [numPlayers, setNumPlayers] = useState(0);
   const [startGame, setStartGame] = useState(false);
   const navigate = useNavigate();
 
@@ -103,17 +104,19 @@ function GameSetup() {
   const createFormSubmit = (values) => {
     console.log(values);
     setRoomID(values.roomID);
+    setNumPlayers(values.numPlayers);
     setStartGame(true);
   };
 
   const joinFormSubmit = (values) => {
     console.log(values);
     setRoomID(values.roomID);
+    setNumPlayers(values.numPlayers);
     setStartGame(true);
   };
 
   return startGame ? (
-    <Game roomID={roomID} />
+    <Game roomID={roomID} numPlayers={numPlayers} />
   ) : (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Card className="w-full max-w-3xl m-4">

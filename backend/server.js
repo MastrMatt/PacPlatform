@@ -40,17 +40,18 @@ const gameRooms = {};
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("joinRoom", (roomName) => {
-    if (gameRooms[roomName] == undefined) {
-      gameRooms[roomName] = {
+  socket.on("joinRoom", ({ roomID, numPlayers }) => {
+    if (gameRooms[roomID] == undefined) {
+      gameRooms[roomID] = {
         players: [],
       };
     }
 
-    gameRooms[roomName].players.push(socket.id);
-    socket.join(roomName);
+    gameRooms[roomID].players.push(socket.id);
+    socket.join(roomID);
 
-    console.log("Player joined room: " + roomName);
+    console.log("Player joined room: " + roomID);
+    console.log("Players to join: " + numPlayers);
     io.to("room1").emit("message", "Room message from server");
   });
 

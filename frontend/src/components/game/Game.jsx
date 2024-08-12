@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
+import { LoaderCircle } from "lucide-react";
 import animationGif from "../../assets/animations.gif";
 import ghostImage from "../../assets/ghost.png";
 
@@ -13,9 +14,9 @@ import Pacman from "./Pacman";
 import Ghost from "./Ghost";
 
 import { BACKEND_URL } from "../../config/Constants";
-import { useParams } from "react-router-dom";
 
-function Game({ roomID }) {
+function Game({ roomID, numPlayers }) {
+  const [loadingGame, setLoadingGame] = useState(true);
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -329,7 +330,10 @@ function Game({ roomID }) {
     // test socketio
     const socket = io(BACKEND_URL);
 
-    socket.emit("joinRoom", roomID);
+    socket.emit("joinRoom", {
+      roomID: roomID,
+      numPlayers: numPlayers,
+    });
 
     socket.on("message", (message) => {
       console.log(message);
@@ -342,11 +346,13 @@ function Game({ roomID }) {
     };
   }, []); // Empty dependency array means this effect runs once on mount
 
-  return (
+  return loadingGame ? (
+    <div className="flex justify-center items-center min-h-screen">
+      <LoaderCircle className="w-10 h-10 animate-spin" />
+    </div>
+  ) : (
     <div className="gameContainer">
-      <canvas ref={canvasRef} id="gameCanvas" width="500" height="500">
-        {" "}
-      </canvas>
+      <canvas ref={canvasRef} id="gameCanvas" width="500" height="500"></canvas>
 
       <div style={{ display: "none" }}>
         <img src={animationGif} id="animation" alt="" />
