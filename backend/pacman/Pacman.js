@@ -1,18 +1,19 @@
 import * as Constants from "./Constants.js";
 
-export default class Pacman {
-  constructor(x, y, width, height, speed) {
+class Pacman {
+  constructor(x, y, width, height, speed, direction, nextDirection) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
     this.speed = speed;
-    this.direction = Constants.DIRECTION_RIGHT;
-    this.nextDirection = Constants.DIRECTION_RIGHT;
+    this.direction = direction;
+    this.nextDirection = nextDirection;
     this.currentFrame = 1;
     this.frameCount = 7;
     this.score = 0;
     this.lives = 3;
+    this.gameCanvasID = Constants.gameCanvasID;
 
     // this is to handle the pacman animation frames
     setInterval(() => {
@@ -140,7 +141,7 @@ export default class Pacman {
   draw() {
     // fetch the canvas context
     const canvasContext = document
-      .getElementById("gameCanvas")
+      .getElementById(this.gameCanvasID)
       .getContext("2d");
     const pacmanFrames = document.getElementById("animation");
 
@@ -194,3 +195,52 @@ export default class Pacman {
 
   resetPosition() {}
 }
+
+/**
+ * This function creates 4 pacmans in the corners of the 2-dimensional map array
+ *
+ * @returns {Array<Pacman>} an array of 4 pacmans
+ */
+
+function create4Pacmen() {
+  let pacmans = [];
+  let map = Constants.map;
+
+  // want to create a pacman for each corner of the map
+  let x = 0;
+  let y = 0;
+  let oneBlockSize = Constants.oneBlockSize;
+  let width = oneBlockSize;
+  let height = oneBlockSize;
+  let speed = Constants.pacManSpeed;
+
+  for (let i = 0; i < 2; i++) {
+    for (let j = 0; j < 2; j++) {
+      // get the x and y coordinates of the pacman (corners of the map)
+      x = j * (map[0].length - 2) * oneBlockSize;
+      y = i * (map.length - 2) * oneBlockSize;
+
+      // We want the pacmans on the right side of the map to go left initially
+      let direction =
+        j % 2 == 1 ? Constants.DIRECTION_LEFT : Constants.DIRECTION_RIGHT;
+
+      let nextDirection = direction;
+
+      let pacman = new Pacman(
+        x,
+        y,
+        width,
+        height,
+        speed,
+        direction,
+        nextDirection
+      );
+
+      pacmans.push(pacman);
+    }
+  }
+
+  return pacmans;
+}
+
+export { Pacman, create4Pacmen };

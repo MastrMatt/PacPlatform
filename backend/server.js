@@ -4,9 +4,17 @@ import cors from "cors";
 
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { fps, map, oneBlockSize } from "./pacman/Constants.js";
+import {
+  fps,
+  map,
+  oneBlockSize,
+  ghostCount,
+  ghostInitialLocations,
+  ghostRange,
+  pacManSpeed,
+} from "./pacman/Constants.js";
 
-import Pacman from "./pacman/Pacman.js";
+import { create4Pacmen, Pacman } from "./pacman/Pacman.js";
 import Ghost from "./pacman/Ghost.js";
 
 const app = express();
@@ -39,19 +47,32 @@ httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Initialize the game for a number of players, players is an array of the ID of the players
+/**
+ * This function initializes the game state for a number of players
+ * @param {Array<string>} players - an array of player IDs
+ * @returns {Object} the game state
+ */
 const gameStateInit = (players) => {
-  // create the pacman's one each corner of the map per player
-  let numPlayers = players.length;
-  for (let i = 0; i < numPlayers; i++) {
-    // define a new pacman functino to initialize several pacmans for a number of players
+  let pacmen = create4Pacmen();
+  let ghosts = createNewGhosts(ghostCount);
+
+  // attach the playerId's to the pacmen
+  let playerPacmen = {};
+  for (let i = 0; i < players.length; i++) {
+    playerPacmen[players[i]] = pacmen[i];
   }
+
+  return {
+    pacmen: playerPacmen,
+    ghosts: ghosts,
+    map: map.slice(),
+  };
 };
 
 const gameRooms = {};
 // socket is the connection to the client
 io.on("connection", (socket) => {
-  socket.on("createRoom", ({ ID, roomID, numPlayers }) => {
+  socket.on("createRoom", ({ clientID, roomID, numPlayers }) => {
     // ! if room is alraedy created, return
     if (gameRooms[roomID]) {
       return;
@@ -64,7 +85,7 @@ io.on("connection", (socket) => {
     };
 
     socket.join(roomID);
-    gameRooms[roomID].players.push(ID);
+    gameRooms[roomID].players.push(clientID);
 
     // if a single player game, start the game
     if (numPlayers == 1) {
@@ -79,14 +100,14 @@ io.on("connection", (socket) => {
     console.log(gameRooms);
   });
 
-  socket.on("joinRoom", ({ ID, roomID }) => {
+  socket.on("joinRoom", ({ clientID, roomID }) => {
     // ! if already joined, return
-    if (gameRooms[roomID].players.includes(ID)) {
+    if (gameRooms[roomID].players.includes(clientID)) {
       return;
     }
 
     socket.join(roomID);
-    gameRooms[roomID].players.push(ID);
+    gameRooms[roomID].players.push(clientID);
 
     // check if enough players have joined the room
     if (gameRooms[roomID].players.length == gameRooms[roomID].numPlayers) {
@@ -112,11 +133,18 @@ io.on("connection", (socket) => {
 
 let serverGameLoop = () => {
   // loop through all rooms and check if all players have joined
-  for (let room in gameRooms) {
-    if (gameRooms[room].players.length == gameRooms[room].numPlayers) {
+  for (let roomID in gameRooms) {
+    let gameRoom = gameRooms[roomID];
+
+    if (gameRoom.players.length == gameRoom.numPlayers) {
       // update the game state
 
-      io.to(room).emit("gameUpdate", "Game is running");
+      // if game state is undefined, initialize the game state
+      if (gameRoom.gameState == {}) {
+        gameRoom.gameState = gameStateInit(gameRoom.players);
+      }
+
+      io.to(roomID).emit("gameUpdate", gameRoom.gameState);
     }
   }
 };
@@ -132,28 +160,6 @@ let serverGameLoop = () => {
 // each pacman per client: {x: number, y: number, direction: string, score: number, lives: number}, update score on food, update lives on ghost collision, update direction on keypress, always update x and y
 
 // ghosts: [{x: number, y: number}, ...]
-
-let pacman;
-let foodCount;
-
-let ghostCount = 4;
-let ghosts = [];
-let ghostLocations = [
-  { x: 0, y: 0 },
-  { x: 176, y: 0 },
-  { x: 0, y: 121 },
-  { x: 176, y: 121 },
-];
-
-let randomTargetsForGhosts = [
-  { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
-  { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
-  { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
-  {
-    x: (map[0].length - 2) * oneBlockSize,
-    y: (map.length - 2) * oneBlockSize,
-  },
-];
 
 let update = () => {
   pacman.moveProcess();
@@ -198,35 +204,49 @@ let resetPacmanAndGhosts = () => {
   createNewGhosts();
 };
 
-let createNewPacman = () => {
-  return new Pacman(
-    oneBlockSize,
-    oneBlockSize,
-    Constants.pacManWidth,
-    Constants.pacManHeight,
-    Constants.pacManSpeed
-  );
-};
+// let createNewPacman = () => {
+//   return new Pacman(
+//     oneBlockSize,
+//     oneBlockSize,
+//     Constants.pacManWidth,
+//     Constants.pacManHeight,
+//     Constants.pacManSpeed
+//   );
+// };
 
-let createNewGhosts = () => {
-  ghosts = [];
+let randomTargetsForGhosts = [
+  { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
+  { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
+  { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
+  {
+    x: (map[0].length - 2) * oneBlockSize,
+    y: (map.length - 2) * oneBlockSize,
+  },
+];
+
+let createNewGhosts = (ghostCount, pacmen) => {
+  let ghostLocations = ghostInitialLocations;
+
+  let ghosts = [];
   for (let i = 0; i < ghostCount; i++) {
     let ghost = new Ghost(
       9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
       10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
       oneBlockSize,
       oneBlockSize,
-      pacman.speed / 2,
+      pacManSpeed / 2,
       ghostLocations[i].x,
       ghostLocations[i].y,
       124,
       116,
-      Constants.ghostRange + i,
-      pacman,
+      ghostRange + i,
+      pacmen,
       randomTargetsForGhosts
     );
     ghosts.push(ghost);
   }
+
+  return ghosts;
 };
 
 let gameLoopInterval = setInterval(serverGameLoop, 1000 / fps);

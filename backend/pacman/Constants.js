@@ -9,6 +9,7 @@ export const fps = 40;
 
 // wallColor = color of the walls
 export const wallColor = "#342DCA";
+export const gameCanvasID = "gameCanvas";
 
 // one block size, the size of the pacman and the walls in pixels
 export const oneBlockSize = 20;
@@ -26,6 +27,13 @@ export const pacManSpeed = oneBlockSize / 8;
 // ghosts
 export const ghostSwitchTargetTime = 5000;
 export const ghostRange = 6;
+export const ghostCount = 4;
+export const ghostInitialLocations = [
+  { x: 0, y: 0 },
+  { x: 176, y: 0 },
+  { x: 0, y: 121 },
+  { x: 176, y: 121 },
+];
 
 // define the pacman maps
 // empty space = 0, wall = 1, food = 2,

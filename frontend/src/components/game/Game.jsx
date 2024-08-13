@@ -14,7 +14,7 @@ function Game({ gameType, roomID, numPlayers }) {
   const [loadingGame, setLoadingGame] = useState(true);
 
   const [socket] = useState(() => io(BACKEND_URL));
-  const ID = useRef("ID" + Date.now());
+  const clientID = useRef("clientID" + Date.now());
 
   const canvasRef = useRef(null);
   const pacmanFramesRef = useRef(null);
@@ -36,13 +36,13 @@ function Game({ gameType, roomID, numPlayers }) {
 
     if (gameType === "create") {
       socket.emit("createRoom", {
-        ID: ID.current,
+        clientID: clientID.current,
         roomID: roomID,
         numPlayers: numPlayers,
       });
     } else if (gameType === "join") {
       socket.emit("joinRoom", {
-        ID: ID.current,
+        clientID: clientID.current,
         roomID: roomID,
       });
     }
@@ -53,13 +53,8 @@ function Game({ gameType, roomID, numPlayers }) {
     });
 
     socket.on("gameUpdate", (gameState) => {
-      let canvas = canvasRef.current;
-      let ctx = canvas.getContext("2d");
-      let pacmanFrames = pacmanFramesRef.current;
-      let ghostFrames = ghostFramesRef.current;
-      // console.log(gameState);
-      // console.log(ctx);
-      // draw(canvas);
+      console.log(gameState);
+      draw(gameState);
     });
 
     socket.on("gameOver", (message) => {
@@ -83,7 +78,12 @@ function Game({ gameType, roomID, numPlayers }) {
       ctx.fillText("Game Over!", 130, 250);
     };
 
-    let drawWalls = () => {
+    /**
+     * Wherever there is a 1 in the map, draws a wall on the canvas
+     *
+     * @param {Array<String>} map - a 2D array of strings
+     */
+    let drawWalls = (map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 1) {
@@ -143,7 +143,7 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let drawFoods = () => {
+    let drawFoods = (map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 2) {
@@ -169,7 +169,12 @@ function Game({ gameType, roomID, numPlayers }) {
       );
     };
 
-    let drawGhosts = () => {
+    /**
+     * Draws the ghosts on the canvas
+     *
+     * @param  {Array<Ghost>} ghosts - an array of ghosts
+     */
+    let drawGhosts = (ghosts) => {
       for (let i = 0; i < ghosts.length; i++) {
         ghosts[i].draw();
       }
@@ -197,13 +202,22 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let draw = (canvas) => {
+    let draw = (gameState) => {
+      let pacmen = gameState.pacmen;
+      let ghosts = gameState.ghosts;
+      let map = gameState.map;
+
+      let canvas = canvasRef.current;
+      let ctx = canvas.getContext("2d");
+      let pacmanFrames = pacmanFramesRef.current;
+      let ghostFrames = ghostFramesRef.current;
+
       // clear the canvas with black color
       createRect(0, 0, canvas.width, canvas.height, "black");
-      drawWalls();
-      drawFoods();
+      drawWalls(ctx, map);
+      drawFoods(ctx, map);
       pacman.draw();
-      drawScore();
+      drawScore(ctx);
       drawGhosts();
       drawLives();
     };
@@ -244,6 +258,7 @@ function Game({ gameType, roomID, numPlayers }) {
     <div className="gameContainer flex items justify-center bg-black w-full h-screen">
       <canvas
         ref={canvasRef}
+        id="gameCanvas"
         className="bg-black basis-2/4 flex-grow-0 flex-shrink-0"
         width="500"
         height="500"

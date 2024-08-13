@@ -12,7 +12,7 @@ export default class Ghost {
     imageWidth,
     imageHeight,
     range,
-    pacman,
+    pacmen,
     randomTargetsForGhosts
   ) {
     this.x = x;
@@ -27,7 +27,7 @@ export default class Ghost {
     this.imageWidth = imageWidth;
     this.range = range;
 
-    this.pacman = pacman;
+    this.pacmen = pacmen;
     this.randomTargetIndex = parseInt(
       Math.random() * randomTargetsForGhosts.length
     );
@@ -41,7 +41,6 @@ export default class Ghost {
   changeRandomDirection() {
     this.randomTargetIndex += 1;
     this.randomTargetIndex %= this.randomTargetsForGhosts.length;
-    console.log(this.randomTargetIndex);
   }
 
   draw() {
