@@ -100,7 +100,6 @@ function GameSetup() {
 
   // 3. need a submit handler if validation passes
   const createFormSubmit = (values) => {
-    console.log(values);
     setRoomID(values.roomID);
     setNumPlayers(values.numPlayers);
     setGameType("create");
@@ -108,7 +107,6 @@ function GameSetup() {
   };
 
   const joinFormSubmit = (values) => {
-    console.log(values);
     setRoomID(values.roomID);
     setGameType("join");
     setStartGame(true);

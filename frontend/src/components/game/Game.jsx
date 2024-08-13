@@ -12,7 +12,9 @@ import { BACKEND_URL } from "../../config/Constants";
 
 function Game({ gameType, roomID, numPlayers }) {
   const [loadingGame, setLoadingGame] = useState(true);
-  const ID = useRef("");
+
+  const [socket] = useState(() => io(BACKEND_URL));
+  const ID = useRef("ID" + Date.now());
 
   const canvasRef = useRef(null);
   const pacmanFramesRef = useRef(null);
@@ -25,22 +27,12 @@ function Game({ gameType, roomID, numPlayers }) {
     let wallOffset = Constants.wallOffset;
     let wallInnerColor = Constants.wallInnerColor;
 
-    let canvas = canvasRef.current;
-    let ctx = canvas.getContext("2d");
-    let pacmanFrames = pacmanFramesRef.current;
-    let ghostFrames = ghostFramesRef.current;
-
-    console.log(pacmanFrames);
-
     //  ! the map with the food will be passed in from the backend, remove extra css from project
 
     const DIRECTION_RIGHT = Constants.DIRECTION_RIGHT;
     const DIRECTION_UP = Constants.DIRECTION_UP;
     const DIRECTION_LEFT = Constants.DIRECTION_LEFT;
     const DIRECTION_BOTTOM = Constants.DIRECTION_BOTTOM;
-
-    const socket = io(BACKEND_URL);
-    ID.current = "ID-" + Date.now();
 
     if (gameType === "create") {
       socket.emit("createRoom", {
@@ -61,8 +53,13 @@ function Game({ gameType, roomID, numPlayers }) {
     });
 
     socket.on("gameUpdate", (gameState) => {
-      draw();
-      console.log(gameState);
+      let canvas = canvasRef.current;
+      let ctx = canvas.getContext("2d");
+      let pacmanFrames = pacmanFramesRef.current;
+      let ghostFrames = ghostFramesRef.current;
+      // console.log(gameState);
+      // console.log(ctx);
+      // draw(canvas);
     });
 
     socket.on("gameOver", (message) => {
@@ -200,7 +197,7 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let draw = () => {
+    let draw = (canvas) => {
       // clear the canvas with black color
       createRect(0, 0, canvas.width, canvas.height, "black");
       drawWalls();
@@ -211,10 +208,8 @@ function Game({ gameType, roomID, numPlayers }) {
       drawLives();
     };
 
-    // add an event listener to the window to listen for keydown events
-    window.addEventListener("keydown", (e) => {
+    const handleKeyDown = (e) => {
       let key = e.key;
-
       if (key == "ArrowRight" || key == "d") {
         pacman.nextDirection = DIRECTION_RIGHT;
       } else if (key == "ArrowLeft" || key == "a") {
@@ -224,13 +219,20 @@ function Game({ gameType, roomID, numPlayers }) {
       } else if (key == "ArrowDown" || key == "s") {
         pacman.nextDirection = DIRECTION_BOTTOM;
       }
-    });
+    };
+
+    // add an event listener to the window to listen for keydown events
+    window.addEventListener("keydown", handleKeyDown);
 
     // Cleanup function to clear interval and disconnect socket when component unmounts
     return () => {
-      socket.disconnect();
+      // remove event listerners here
+      socket?.off("allPlayersJoined");
+      socket?.off("gameUpdate");
+      socket?.off("gameOver");
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [loadingGame]);
+  }, []);
 
   return loadingGame ? (
     <div className="flex flex-col gap-4 justify-center items-center min-h-screen">
