@@ -39,24 +39,36 @@ httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const gameStateInit = () => {};
+// Initialize the game for a number of players, players is an array of the ID of the players
+const gameStateInit = (players) => {
+  // create the pacman's one each corner of the map per player
+  let numPlayers = players.length;
+  for (let i = 0; i < numPlayers; i++) {
+    // define a new pacman functino to initialize several pacmans for a number of players
+  }
+};
 
-const gameRooms = [];
+const gameRooms = {};
 // socket is the connection to the client
 io.on("connection", (socket) => {
   socket.on("createRoom", ({ ID, roomID, numPlayers }) => {
+    // ! if room is alraedy created, return
+    if (gameRooms[roomID]) {
+      return;
+    }
+
     gameRooms[roomID] = {
       players: [],
       numPlayers: numPlayers,
       gameState: {},
     };
 
-    gameRooms[roomID].players.push(ID);
     socket.join(roomID);
+    gameRooms[roomID].players.push(ID);
 
     // if a single player game, start the game
     if (numPlayers == 1) {
-      gameRooms[roomID].gameState = gameStateInit();
+      gameRooms[roomID].gameState = gameStateInit(gameRooms[roomID].players);
 
       // start the game
       io.to(roomID).emit(
@@ -68,15 +80,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinRoom", ({ ID, roomID }) => {
-    gameRooms[roomID].players.push(ID);
+    // ! if already joined, return
+    if (gameRooms[roomID].players.includes(ID)) {
+      return;
+    }
+
     socket.join(roomID);
+    gameRooms[roomID].players.push(ID);
 
     // check if enough players have joined the room
     if (gameRooms[roomID].players.length == gameRooms[roomID].numPlayers) {
       console.log("all players have joined the room");
 
       // initialize the game state
-      gameRooms[roomID].gameState = gameStateInit();
+      gameRooms[roomID].gameState = gameStateInit(gameRooms[roomID].players);
 
       io.to(roomID).emit(
         "allPlayersJoined",
@@ -89,6 +106,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");
+    // remove the user from the room
   });
 });
 
@@ -96,7 +114,8 @@ let serverGameLoop = () => {
   // loop through all rooms and check if all players have joined
   for (let room in gameRooms) {
     if (gameRooms[room].players.length == gameRooms[room].numPlayers) {
-      // start the game
+      // update the game state
+
       io.to(room).emit("gameUpdate", "Game is running");
     }
   }
