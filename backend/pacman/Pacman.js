@@ -1,7 +1,19 @@
 import * as Constants from "./Constants.js";
 
 class Pacman {
-  constructor(x, y, width, height, speed, direction, nextDirection) {
+  constructor(
+    startX,
+    startY,
+    x,
+    y,
+    width,
+    height,
+    speed,
+    direction,
+    nextDirection
+  ) {
+    this.startX = startX;
+    this.startY = startY;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -188,7 +200,7 @@ function create4Pacmen() {
       }
 
       pacmans.push(
-        new Pacman(j, i, width, height, speed, direction, direction)
+        new Pacman(j, i, j, i, width, height, speed, direction, direction)
       );
     }
   }

@@ -7,11 +7,8 @@ import { Server } from "socket.io";
 import {
   fps,
   map,
-  oneBlockSize,
   ghostCount,
-  ghostInitialLocations,
-  ghostRange,
-  pacManSpeed,
+  oneBlockSize,
   DIRECTION_UP,
   DIRECTION_BOTTOM,
   DIRECTION_LEFT,
@@ -19,7 +16,7 @@ import {
 } from "./pacman/Constants.js";
 
 import { create4Pacmen, Pacman } from "./pacman/Pacman.js";
-import Ghost from "./pacman/Ghost.js";
+import { createNewGhosts, Ghost } from "./pacman/Ghost.js";
 
 const app = express();
 
@@ -58,7 +55,7 @@ httpServer.listen(PORT, () => {
  */
 const gameStateInit = (players) => {
   let pacmen = create4Pacmen();
-  let ghosts = createNewGhosts(ghostCount, pacmen);
+  let ghosts = createNewGhosts(ghostCount);
 
   // attach the playerId's to the pacmen
   let playerPacmen = {};
@@ -165,8 +162,7 @@ let serverGameLoop = () => {
       if (gameRoom.gameState == {}) {
         gameRoom.gameState = gameStateInit(gameRoom.players);
       } else {
-        // ! update the game state
-        update(gameRoom.gameState.pacmen, gameRoom.gameState.ghosts);
+        update(gameRoom.gameState);
       }
 
       io.to(roomID).emit("gameUpdate", gameRoom.gameState);
@@ -186,8 +182,10 @@ let serverGameLoop = () => {
 
 // ghosts: [{x: number, y: number}, ...]
 
-// ! working on this now
-let update = (pacmen, ghosts) => {
+let update = (gameState) => {
+  let pacmen = gameState.pacmen;
+  let ghosts = gameState.ghosts;
+
   for (let clientID in pacmen) {
     pacmen[clientID].moveProcess();
     pacmen[clientID].eat();
@@ -197,10 +195,13 @@ let update = (pacmen, ghosts) => {
     ghosts[i].moveProcess(pacmen);
   }
 
-  // if (pacman.checkGhostCollision(ghosts)) {
-  //   onGhostCollision();
-  // }
+  for (let clientID in pacmen) {
+    if (pacmen[clientID].checkGhostCollision(ghosts)) {
+      onGhostCollision(pacmen[clientID], ghosts);
+    }
+  }
 
+  // ! Determine game winning conditions here, think about maybe COOP vs COMPETITIVE
   // if (pacman.score >= foodCount) {
   //   gameWinner();
   // }
@@ -211,60 +212,33 @@ let gameWinner = () => {
   drawWinner();
 };
 
-let onGhostCollision = () => {
-  resetPacmanAndGhosts();
+let resetPacman = (pacman) => {
+  pacman.reduceLives(1);
+
+  if (pacman.lives == 0) {
+    // ! Handle game over for an individual player
+    // gameOver();
+  }
+
+  pacman.x = pacman.startX;
+  pacman.y = pacman.startY;
+};
+
+let resetGhosts = (ghosts) => {
+  for (let i = 0; i < ghosts.length; i++) {
+    ghosts[i].x = ghosts[i].startX;
+    ghosts[i].y = ghosts[i].startY;
+  }
+};
+
+let onGhostCollision = (pacman, ghosts) => {
+  resetPacman(pacman);
+  resetGhosts(ghosts);
 };
 
 let gameOver = () => {
   clearInterval(gameLoopInterval);
   drawGameOver();
-};
-
-let resetPacmanAndGhosts = () => {
-  pacman.reduceLives(1);
-
-  if (pacman.lives == 0) {
-    gameOver();
-  }
-
-  pacman.x = oneBlockSize;
-  pacman.y = oneBlockSize;
-  createNewGhosts();
-};
-
-let randomTargetsForGhosts = [
-  { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
-  { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
-  { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
-  {
-    x: (map[0].length - 2) * oneBlockSize,
-    y: (map.length - 2) * oneBlockSize,
-  },
-];
-
-let createNewGhosts = (ghostCount, pacmen) => {
-  let ghostLocations = ghostInitialLocations;
-
-  let ghosts = [];
-  for (let i = 0; i < ghostCount; i++) {
-    let ghost = new Ghost(
-      9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
-      10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
-      oneBlockSize,
-      oneBlockSize,
-      pacManSpeed / 2,
-      ghostLocations[i].x,
-      ghostLocations[i].y,
-      124,
-      116,
-      ghostRange + i,
-      pacmen,
-      randomTargetsForGhosts
-    );
-    ghosts.push(ghost);
-  }
-
-  return ghosts;
 };
 
 let gameLoopInterval = setInterval(serverGameLoop, 1000 / fps);

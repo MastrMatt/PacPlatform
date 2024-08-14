@@ -1,8 +1,9 @@
 import * as Constants from "./Constants.js";
 
-// ! Need to change inrange and direction function to handle Pacmen instead of one pacman
-export default class Ghost {
+export class Ghost {
   constructor(
+    startX,
+    startY,
     x,
     y,
     width,
@@ -15,6 +16,8 @@ export default class Ghost {
     range,
     randomTargetsForGhosts
   ) {
+    this.startX = startX;
+    this.startY = startY;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -26,7 +29,7 @@ export default class Ghost {
     this.imageHeight = imageHeight;
     this.imageWidth = imageWidth;
     this.range = range;
-    this.allowSwitchTarget = true;
+    this.allowTargetPacmen = true;
 
     this.randomTargetIndex = parseInt(
       Math.random() * randomTargetsForGhosts.length
@@ -35,7 +38,7 @@ export default class Ghost {
 
     setInterval(() => {
       // want the ghosts to switch target every Constants.ghostSwitchTargetTime
-      this.allowSwitchTarget = !this.allowSwitchTarget;
+      this.allowTargetPacmen = true;
       this.changeRandomDirection();
     }, Constants.ghostSwitchTargetTime);
   }
@@ -71,8 +74,14 @@ export default class Ghost {
   }
 
   moveProcess(pacmen) {
-    // ! Look at getPacInRange it should be running all the tim eto make sure a pacmen does not get sniped from across the map
-    if (this.allowSwitchTarget) {
+    // check if target is random, always allow switch target if it is
+    if (this.target == this.randomTargetsForGhosts[this.randomTargetIndex]) {
+      this.allowTargetPacmen = true;
+    }
+
+    // try to switch to a pacmen if it is in range, else switch to a random target, disable the ability to switch target to a pacman for a while to stop flickering
+    if (this.allowTargetPacmen) {
+      this.allowTargetPacmen = false;
       let rangePac = this.getPacInRange(pacmen);
       if (rangePac) {
         this.target = rangePac;
@@ -284,4 +293,35 @@ export default class Ghost {
     let mapY = parseInt((this.y * 0.99999 + oneBlockSize) / oneBlockSize);
     return mapY;
   }
+}
+
+export function createNewGhosts(ghostCount) {
+  let ghostLocations = Constants.ghostInitialLocations;
+  let oneBlockSize = Constants.oneBlockSize;
+  let pacManSpeed = Constants.pacManSpeed;
+  let ghostRange = Constants.ghostRange;
+  let map = Constants.map;
+  let randomTargetsForGhosts = Constants.randomTargetsForGhosts;
+
+  let ghosts = [];
+  for (let i = 0; i < ghostCount; i++) {
+    let ghost = new Ghost(
+      9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+      10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+      9 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+      10 * oneBlockSize + (i % 2 == 0 ? 0 : 1) * oneBlockSize,
+      oneBlockSize,
+      oneBlockSize,
+      pacManSpeed / 2,
+      ghostLocations[i].x,
+      ghostLocations[i].y,
+      124,
+      116,
+      ghostRange + i,
+      randomTargetsForGhosts
+    );
+    ghosts.push(ghost);
+  }
+
+  return ghosts;
 }

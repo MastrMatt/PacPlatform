@@ -24,17 +24,6 @@ export const pacManWidth = oneBlockSize;
 // 1/5 of the block size per frame
 export const pacManSpeed = oneBlockSize / 8;
 
-// ghosts
-export const ghostSwitchTargetTime = 5000;
-export const ghostRange = 6;
-export const ghostCount = 4;
-export const ghostInitialLocations = [
-  { x: 0, y: 0 },
-  { x: 176, y: 0 },
-  { x: 0, y: 121 },
-  { x: 176, y: 121 },
-];
-
 // define the pacman maps
 // empty space = 0, wall = 1, food = 2,
 // 23 X 21 array
@@ -62,4 +51,24 @@ export const map = [
   [1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1],
   [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
+
+// ghosts
+export const ghostSwitchTargetTime = 4000;
+export const ghostRange = 6;
+export const ghostCount = 4;
+export const ghostInitialLocations = [
+  { x: 0, y: 0 },
+  { x: 176, y: 0 },
+  { x: 0, y: 121 },
+  { x: 176, y: 121 },
+];
+export const randomTargetsForGhosts = [
+  { x: 1 * oneBlockSize, y: 1 * oneBlockSize },
+  { x: 1 * oneBlockSize, y: (map.length - 2) * oneBlockSize },
+  { x: (map[0].length - 2) * oneBlockSize, y: oneBlockSize },
+  {
+    x: (map[0].length - 2) * oneBlockSize,
+    y: (map.length - 2) * oneBlockSize,
+  },
 ];
