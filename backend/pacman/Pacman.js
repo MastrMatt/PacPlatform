@@ -13,7 +13,6 @@ class Pacman {
     this.frameCount = 7;
     this.score = 0;
     this.lives = 3;
-    this.gameCanvasID = Constants.gameCanvasID;
 
     // this is to handle the pacman animation frames
     setInterval(() => {
@@ -138,44 +137,6 @@ class Pacman {
       this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
   }
 
-  draw() {
-    // fetch the canvas context
-    const canvasContext = document
-      .getElementById(this.gameCanvasID)
-      .getContext("2d");
-    const pacmanFrames = document.getElementById("animation");
-
-    let oneBlockSize = Constants.oneBlockSize;
-
-    // save the canvas context, useful to restore the canvas context later
-    canvasContext.save();
-
-    // translate the canvas context to the center of the pacman
-    canvasContext.translate(this.x + this.width / 2, this.y + this.height / 2);
-
-    // convert the angle to radians first
-    canvasContext.rotate((this.direction * 90 * Math.PI) / 180);
-    // translate the canvas context back to the top left corner of the pacman
-    canvasContext.translate(
-      -this.x - this.width / 2,
-      -this.y - this.height / 2
-    );
-    // draw the pacman
-    canvasContext.drawImage(
-      pacmanFrames,
-      (this.currentFrame - 1) * this.width,
-      0,
-      this.width,
-      this.height,
-      this.x,
-      this.y,
-      this.width,
-      this.height
-    );
-    // restore the canvas context
-    canvasContext.restore();
-  }
-
   eat() {
     let map = Constants.map;
 
@@ -207,36 +168,28 @@ function create4Pacmen() {
   let map = Constants.map;
 
   // want to create a pacman for each corner of the map
-  let x = 0;
-  let y = 0;
   let oneBlockSize = Constants.oneBlockSize;
   let width = oneBlockSize;
   let height = oneBlockSize;
   let speed = Constants.pacManSpeed;
 
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 2; j++) {
-      // get the x and y coordinates of the pacman (corners of the map)
-      x = j * (map[0].length - 2) * oneBlockSize;
-      y = i * (map.length - 2) * oneBlockSize;
+  let allX = [oneBlockSize, oneBlockSize * (map[0].length - 2)];
+  let allY = [oneBlockSize, oneBlockSize * (map.length - 2)];
+  let direction1 = Constants.DIRECTION_RIGHT;
+  let direction2 = Constants.DIRECTION_LEFT;
 
-      // We want the pacmans on the right side of the map to go left initially
-      let direction =
-        j % 2 == 1 ? Constants.DIRECTION_LEFT : Constants.DIRECTION_RIGHT;
+  for (let i of allY) {
+    for (let j of allX) {
+      let direction;
+      if (j == oneBlockSize) {
+        direction = Constants.DIRECTION_RIGHT;
+      } else {
+        direction = Constants.DIRECTION_LEFT;
+      }
 
-      let nextDirection = direction;
-
-      let pacman = new Pacman(
-        x,
-        y,
-        width,
-        height,
-        speed,
-        direction,
-        nextDirection
+      pacmans.push(
+        new Pacman(j, i, width, height, speed, direction, direction)
       );
-
-      pacmans.push(pacman);
     }
   }
 

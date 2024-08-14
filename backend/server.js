@@ -12,6 +12,10 @@ import {
   ghostInitialLocations,
   ghostRange,
   pacManSpeed,
+  DIRECTION_UP,
+  DIRECTION_BOTTOM,
+  DIRECTION_LEFT,
+  DIRECTION_RIGHT,
 } from "./pacman/Constants.js";
 
 import { create4Pacmen, Pacman } from "./pacman/Pacman.js";
@@ -125,6 +129,24 @@ io.on("connection", (socket) => {
     console.log(gameRooms);
   });
 
+  socket.on("keyDown", ({ roomID, clientID, direction }) => {
+    // update the direction of the pacman
+    if (direction == "up") {
+      gameRooms[roomID].gameState.pacmen[clientID].nextDirection = DIRECTION_UP;
+    } else if (direction == "down") {
+      gameRooms[roomID].gameState.pacmen[clientID].nextDirection =
+        DIRECTION_BOTTOM;
+    } else if (direction == "left") {
+      gameRooms[roomID].gameState.pacmen[clientID].nextDirection =
+        DIRECTION_LEFT;
+    } else if (direction == "right") {
+      gameRooms[roomID].gameState.pacmen[clientID].nextDirection =
+        DIRECTION_RIGHT;
+    } else {
+      console.log("Invalid direction received");
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("A user disconnected");
     // remove the user from the room
@@ -142,6 +164,9 @@ let serverGameLoop = () => {
       // if game state is undefined, initialize the game state
       if (gameRoom.gameState == {}) {
         gameRoom.gameState = gameStateInit(gameRoom.players);
+      } else {
+        // ! update the game state
+        update(gameRoom.gameState.pacmen, gameRoom.gameState.ghosts);
       }
 
       io.to(roomID).emit("gameUpdate", gameRoom.gameState);
@@ -161,21 +186,24 @@ let serverGameLoop = () => {
 
 // ghosts: [{x: number, y: number}, ...]
 
-let update = () => {
-  pacman.moveProcess();
-  pacman.eat();
-
-  for (let i = 0; i < ghosts.length; i++) {
-    ghosts[i].moveProcess();
+// ! working on this now
+let update = (pacmen, ghosts) => {
+  for (let clientID in pacmen) {
+    pacmen[clientID].moveProcess();
+    pacmen[clientID].eat();
   }
 
-  if (pacman.checkGhostCollision(ghosts)) {
-    onGhostCollision();
-  }
+  // for (let i = 0; i < ghosts.length; i++) {
+  //   ghosts[i].moveProcess();
+  // }
 
-  if (pacman.score >= foodCount) {
-    gameWinner();
-  }
+  // if (pacman.checkGhostCollision(ghosts)) {
+  //   onGhostCollision();
+  // }
+
+  // if (pacman.score >= foodCount) {
+  //   gameWinner();
+  // }
 };
 
 let gameWinner = () => {
@@ -203,16 +231,6 @@ let resetPacmanAndGhosts = () => {
   pacman.y = oneBlockSize;
   createNewGhosts();
 };
-
-// let createNewPacman = () => {
-//   return new Pacman(
-//     oneBlockSize,
-//     oneBlockSize,
-//     Constants.pacManWidth,
-//     Constants.pacManHeight,
-//     Constants.pacManSpeed
-//   );
-// };
 
 let randomTargetsForGhosts = [
   { x: 1 * oneBlockSize, y: 1 * oneBlockSize },

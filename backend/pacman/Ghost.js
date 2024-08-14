@@ -1,5 +1,6 @@
 import * as Constants from "./Constants.js";
 
+// ! Need to change inrange and direction function to handle Pacmen instead of one pacman
 export default class Ghost {
   constructor(
     x,
@@ -41,28 +42,6 @@ export default class Ghost {
   changeRandomDirection() {
     this.randomTargetIndex += 1;
     this.randomTargetIndex %= this.randomTargetsForGhosts.length;
-  }
-
-  draw() {
-    // / fetch the canvas context
-    const canvasContext = document
-      .getElementById("gameCanvas")
-      .getContext("2d");
-    const ghostFrames = document.getElementById("ghosts");
-
-    canvasContext.save();
-    canvasContext.drawImage(
-      ghostFrames,
-      this.imageX,
-      this.imageY,
-      this.imageWidth,
-      this.imageHeight,
-      this.x,
-      this.y,
-      this.width,
-      this.height
-    );
-    canvasContext.restore();
   }
 
   isInRange() {

@@ -61,7 +61,7 @@ function Game({ gameType, roomID, numPlayers }) {
       console.log(message);
     });
 
-    let createRect = (x, y, width, height, color) => {
+    let createRect = (ctx, x, y, width, height, color) => {
       ctx.fillStyle = color;
       ctx.fillRect(x, y, width, height);
     };
@@ -83,11 +83,12 @@ function Game({ gameType, roomID, numPlayers }) {
      *
      * @param {Array<String>} map - a 2D array of strings
      */
-    let drawWalls = (map) => {
+    let drawWalls = (ctx, map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 1) {
             createRect(
+              ctx,
               j * oneBlockSize,
               i * oneBlockSize,
               oneBlockSize,
@@ -98,6 +99,7 @@ function Game({ gameType, roomID, numPlayers }) {
             // account for wall on left
             if (j > 0 && map[i][j - 1] == 1) {
               createRect(
+                ctx,
                 j * oneBlockSize,
                 i * oneBlockSize + wallOffset,
                 wallSpaceWidth + wallOffset,
@@ -109,6 +111,7 @@ function Game({ gameType, roomID, numPlayers }) {
             // account for wall on right
             if (j < map[0].length - 1 && map[i][j + 1] == 1) {
               createRect(
+                ctx,
                 j * oneBlockSize + wallOffset,
                 i * oneBlockSize + wallOffset,
                 wallSpaceWidth + wallOffset,
@@ -120,6 +123,7 @@ function Game({ gameType, roomID, numPlayers }) {
             // account for wall on top
             if (i > 0 && map[i - 1][j] == 1) {
               createRect(
+                ctx,
                 j * oneBlockSize + wallOffset,
                 i * oneBlockSize,
                 wallSpaceWidth,
@@ -131,6 +135,7 @@ function Game({ gameType, roomID, numPlayers }) {
             // account for wall on bottom
             if (i < map.length - 1 && map[i + 1][j] == 1) {
               createRect(
+                ctx,
                 j * oneBlockSize + wallOffset,
                 i * oneBlockSize + wallOffset,
                 wallSpaceWidth,
@@ -143,11 +148,17 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let drawFoods = (map) => {
+    /**
+     * Wherever there is a 2 in the map, draws a food on the canvas
+     * @param {*} ctx - canvas context
+     * @param {Array<String>} map - a 2D array of strings
+     */
+    let drawFoods = (ctx, map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 2) {
             createRect(
+              ctx,
               j * oneBlockSize + oneBlockSize / 3,
               i * oneBlockSize + oneBlockSize / 3,
               oneBlockSize / 3,
@@ -159,7 +170,12 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let drawScore = () => {
+    /**
+     * Draws the score of the pacman on the canvas
+     * @param {*} ctx - canvas context
+     * @param {Pacman} pacman - the pacman object
+     */
+    let drawScore = (ctx, pacman, map) => {
       ctx.font = "18px PacFont";
       ctx.fillStyle = "white";
       ctx.fillText(
@@ -169,18 +185,40 @@ function Game({ gameType, roomID, numPlayers }) {
       );
     };
 
+    let drawGhost = (ctx, ghostFrames, ghost) => {
+      ctx.save();
+      ctx.drawImage(
+        ghostFrames,
+        ghost.imageX,
+        ghost.imageY,
+        ghost.imageWidth,
+        ghost.imageHeight,
+        ghost.x,
+        ghost.y,
+        ghost.width,
+        ghost.height
+      );
+      ctx.restore();
+    };
+
     /**
      * Draws the ghosts on the canvas
      *
      * @param  {Array<Ghost>} ghosts - an array of ghosts
      */
-    let drawGhosts = (ghosts) => {
+    let drawGhosts = (ctx, ghostFrames, ghosts) => {
       for (let i = 0; i < ghosts.length; i++) {
-        ghosts[i].draw();
+        drawGhost(ctx, ghostFrames, ghosts[i]);
       }
     };
 
-    let drawLives = () => {
+    /**
+     * Draws the lives of the pacman on the canvas
+     *
+     * @param {*} ctx - canvas context
+     * @param {Pacman} pacman - the pacman object
+     */
+    let drawLives = (ctx, pacman, map, pacmanFrames) => {
       let lives = pacman.lives;
 
       ctx.font = "18px PacFont";
@@ -202,8 +240,59 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
+    let drawPacman = (ctx, pacmanFrames, pacman) => {
+      // save the canvas context, useful to restore the canvas context later
+      ctx.save();
+
+      // translate the canvas context to the center of the pacman
+      ctx.translate(pacman.x + pacman.width / 2, pacman.y + pacman.height / 2);
+
+      // convert the angle to radians first
+      ctx.rotate((pacman.direction * 90 * Math.PI) / 180);
+      // translate the canvas context back to the top left corner of the pacman
+      ctx.translate(
+        -pacman.x - pacman.width / 2,
+        -pacman.y - pacman.height / 2
+      );
+      // draw the pacman
+      ctx.drawImage(
+        pacmanFrames,
+        (pacman.currentFrame - 1) * pacman.width,
+        0,
+        pacman.width,
+        pacman.height,
+        pacman.x,
+        pacman.y,
+        pacman.width,
+        pacman.height
+      );
+      // restore the canvas context
+      ctx.restore();
+    };
+
+    /**
+     *
+     * @param {*} ctx - canvas context
+     * @param {*} pacmanFrames - the image of the pacman
+     * @param {Array<Pacman>} pacmen - an object containing all the pacmen
+     */
+    let drawPacmen = (ctx, pacmanFrames, pacmen) => {
+      for (let clientID in pacmen) {
+        // turn the generic object from socket.io into a Pacman object
+        drawPacman(ctx, pacmanFrames, pacmen[clientID]);
+      }
+    };
+
+    /**
+     * Draws the game on the canvas
+     * @param {*} gameState - the game state object
+     * @param {Array<Pacman>} gameState.pacmen - an object
+     *
+     */
     let draw = (gameState) => {
       let pacmen = gameState.pacmen;
+      let myPacman = pacmen[clientID.current];
+
       let ghosts = gameState.ghosts;
       let map = gameState.map;
 
@@ -213,25 +302,38 @@ function Game({ gameType, roomID, numPlayers }) {
       let ghostFrames = ghostFramesRef.current;
 
       // clear the canvas with black color
-      createRect(0, 0, canvas.width, canvas.height, "black");
+      createRect(ctx, 0, 0, canvas.width, canvas.height, "black");
+
       drawWalls(ctx, map);
       drawFoods(ctx, map);
-      pacman.draw();
-      drawScore(ctx);
-      drawGhosts();
-      drawLives();
+      drawPacmen(ctx, pacmanFrames, pacmen);
+      drawGhosts(ctx, ghostFrames, ghosts);
+
+      drawScore(ctx, myPacman, map);
+      drawLives(ctx, myPacman, map, pacmanFrames);
     };
 
     const handleKeyDown = (e) => {
       let key = e.key;
+      let direction = null;
+
       if (key == "ArrowRight" || key == "d") {
-        pacman.nextDirection = DIRECTION_RIGHT;
+        direction = "right";
       } else if (key == "ArrowLeft" || key == "a") {
-        pacman.nextDirection = DIRECTION_LEFT;
+        direction = "left";
       } else if (key == "ArrowUp" || key == "w") {
-        pacman.nextDirection = DIRECTION_UP;
+        direction = "up";
       } else if (key == "ArrowDown" || key == "s") {
-        pacman.nextDirection = DIRECTION_BOTTOM;
+        direction = "down";
+      }
+
+      if (direction) {
+        // send the key to the server
+        socket.emit("keyDown", {
+          roomID: roomID,
+          clientID: clientID.current,
+          direction: direction,
+        });
       }
     };
 
@@ -258,7 +360,6 @@ function Game({ gameType, roomID, numPlayers }) {
     <div className="gameContainer flex items justify-center bg-black w-full h-screen">
       <canvas
         ref={canvasRef}
-        id="gameCanvas"
         className="bg-black basis-2/4 flex-grow-0 flex-shrink-0"
         width="500"
         height="500"
