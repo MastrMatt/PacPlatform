@@ -58,7 +58,7 @@ httpServer.listen(PORT, () => {
  */
 const gameStateInit = (players) => {
   let pacmen = create4Pacmen();
-  let ghosts = createNewGhosts(ghostCount);
+  let ghosts = createNewGhosts(ghostCount, pacmen);
 
   // attach the playerId's to the pacmen
   let playerPacmen = {};
@@ -193,9 +193,9 @@ let update = (pacmen, ghosts) => {
     pacmen[clientID].eat();
   }
 
-  // for (let i = 0; i < ghosts.length; i++) {
-  //   ghosts[i].moveProcess();
-  // }
+  for (let i = 0; i < ghosts.length; i++) {
+    ghosts[i].moveProcess(pacmen);
+  }
 
   // if (pacman.checkGhostCollision(ghosts)) {
   //   onGhostCollision();

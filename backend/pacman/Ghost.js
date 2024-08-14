@@ -13,7 +13,6 @@ export default class Ghost {
     imageWidth,
     imageHeight,
     range,
-    pacmen,
     randomTargetsForGhosts
   ) {
     this.x = x;
@@ -27,14 +26,16 @@ export default class Ghost {
     this.imageHeight = imageHeight;
     this.imageWidth = imageWidth;
     this.range = range;
+    this.allowSwitchTarget = true;
 
-    this.pacmen = pacmen;
     this.randomTargetIndex = parseInt(
       Math.random() * randomTargetsForGhosts.length
     );
     this.randomTargetsForGhosts = randomTargetsForGhosts;
 
     setInterval(() => {
+      // want the ghosts to switch target every Constants.ghostSwitchTargetTime
+      this.allowSwitchTarget = !this.allowSwitchTarget;
       this.changeRandomDirection();
     }, Constants.ghostSwitchTargetTime);
   }
@@ -44,23 +45,42 @@ export default class Ghost {
     this.randomTargetIndex %= this.randomTargetsForGhosts.length;
   }
 
-  isInRange() {
-    let xDistance = Math.abs(this.pacman.getMapX() - this.getMapX());
-    let yDistance = Math.abs(this.pacman.getMapY() - this.getMapY());
-    if (
-      this.range >= Math.sqrt(xDistance * xDistance + yDistance * yDistance)
-    ) {
-      return true;
+  getPacInRange(pacmen) {
+    // convert the pacmen (Object with keys representing the clientID) to an array of pacmen
+    let pacmenArray = Object.values(pacmen);
+
+    // randomly shuffle the array of pacmen using the Fisher-Yates algorithm, to ensure that the ghosts don't always target the same pacmen
+    for (let i = pacmenArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pacmenArray[i], pacmenArray[j]] = [pacmenArray[j], pacmenArray[i]];
     }
-    return false;
+
+    // check if any of the pacmen are in range
+    for (let i = 0; i < pacmenArray.length; i++) {
+      let xDistance = Math.abs(pacmenArray[i].getMapX() - this.getMapX());
+      let yDistance = Math.abs(pacmenArray[i].getMapX() - this.getMapY());
+
+      if (
+        this.range >= Math.sqrt(xDistance * xDistance + yDistance * yDistance)
+      ) {
+        return pacmenArray[i];
+      }
+    }
+
+    return null;
   }
 
-  moveProcess() {
-    if (this.isInRange()) {
-      this.target = this.pacman;
-    } else {
-      this.target = this.randomTargetsForGhosts[this.randomTargetIndex];
+  moveProcess(pacmen) {
+    // ! Look at getPacInRange it should be running all the tim eto make sure a pacmen does not get sniped from across the map
+    if (this.allowSwitchTarget) {
+      let rangePac = this.getPacInRange(pacmen);
+      if (rangePac) {
+        this.target = rangePac;
+      } else {
+        this.target = this.randomTargetsForGhosts[this.randomTargetIndex];
+      }
     }
+
     this.changeDirectionIfPossible();
     this.moveForward();
     if (this.checkCollisions()) {
