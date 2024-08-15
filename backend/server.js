@@ -65,6 +65,7 @@ const gameStateInit = (players) => {
 
   return {
     pacmen: playerPacmen,
+    elimPacmen: {},
     ghosts: ghosts,
     map: map.slice(),
   };
@@ -74,7 +75,7 @@ const gameRooms = {};
 // socket is the connection to the client
 io.on("connection", (socket) => {
   socket.on("createRoom", ({ clientID, roomID, numPlayers }) => {
-    // ! if room is alraedy created, return
+    //  if room is already created, return
     if (gameRooms[roomID]) {
       return;
     }
@@ -102,7 +103,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinRoom", ({ clientID, roomID }) => {
-    // ! if already joined, return
+    //  if already joined, return
     if (gameRooms[roomID].players.includes(clientID)) {
       return;
     }
@@ -127,6 +128,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("keyDown", ({ roomID, clientID, direction }) => {
+    // check if client has been eliminated
+    if (!gameRooms[roomID].gameState.pacmen[clientID]) {
+      return;
+    }
     // update the direction of the pacman
     if (direction == "up") {
       gameRooms[roomID].gameState.pacmen[clientID].nextDirection = DIRECTION_UP;
@@ -162,7 +167,7 @@ let serverGameLoop = () => {
       if (gameRoom.gameState == {}) {
         gameRoom.gameState = gameStateInit(gameRoom.players);
       } else {
-        update(gameRoom.gameState);
+        update(roomID, gameRoom.gameState);
       }
 
       io.to(roomID).emit("gameUpdate", gameRoom.gameState);
@@ -182,43 +187,8 @@ let serverGameLoop = () => {
 
 // ghosts: [{x: number, y: number}, ...]
 
-let update = (gameState) => {
-  let pacmen = gameState.pacmen;
-  let ghosts = gameState.ghosts;
-
-  for (let clientID in pacmen) {
-    pacmen[clientID].moveProcess();
-    pacmen[clientID].eat();
-  }
-
-  for (let i = 0; i < ghosts.length; i++) {
-    ghosts[i].moveProcess(pacmen);
-  }
-
-  for (let clientID in pacmen) {
-    if (pacmen[clientID].checkGhostCollision(ghosts)) {
-      onGhostCollision(pacmen[clientID], ghosts);
-    }
-  }
-
-  // ! Determine game winning conditions here, think about maybe COOP vs COMPETITIVE
-  // if (pacman.score >= foodCount) {
-  //   gameWinner();
-  // }
-};
-
-let gameWinner = () => {
-  clearInterval(gameLoopInterval);
-  drawWinner();
-};
-
 let resetPacman = (pacman) => {
   pacman.reduceLives(1);
-
-  if (pacman.lives == 0) {
-    // ! Handle game over for an individual player
-    // gameOver();
-  }
 
   pacman.x = pacman.startX;
   pacman.y = pacman.startY;
@@ -236,9 +206,79 @@ let onGhostCollision = (pacman, ghosts) => {
   resetGhosts(ghosts);
 };
 
-let gameOver = () => {
-  clearInterval(gameLoopInterval);
-  drawGameOver();
+let handlePacElim = (roomID, clientID) => {
+  // remove the player from the game state and add to elimPacmen, delete operator removes a key-value pair from an object
+  gameRooms[roomID].gameState.elimPacmen[clientID] =
+    gameRooms[roomID].gameState.pacmen[clientID];
+  delete gameRooms[roomID].gameState.pacmen[clientID];
+
+  io.to(roomID).emit("pacmanElim", clientID);
+};
+
+let handleGameOver = (roomID, gameState) => {
+  // delete the room from the gameRooms object
+  delete gameRooms[roomID];
+
+  // ! perforn any backend logic here related to game over, like updating the database for the scores
+  // ! NOTE: you have acess to the gameState object here
+};
+
+let update = (roomID, gameState) => {
+  let pacmen = gameState.pacmen;
+  let ghosts = gameState.ghosts;
+  let map = gameState.map;
+
+  // update the pacmen
+  for (let clientID in pacmen) {
+    pacmen[clientID].moveProcess();
+    pacmen[clientID].eat();
+  }
+
+  // update the ghosts
+  for (let i = 0; i < ghosts.length; i++) {
+    ghosts[i].moveProcess(pacmen);
+  }
+
+  // check for pacmen collisions with ghosts
+  for (let clientID in pacmen) {
+    if (pacmen[clientID].checkGhostCollision(ghosts)) {
+      onGhostCollision(pacmen[clientID], ghosts);
+    }
+  }
+
+  // see if any pacmen are out of lives
+  for (let clientID in pacmen) {
+    if (pacmen[clientID].lives <= 0) {
+      handlePacElim(roomID, clientID);
+    }
+  }
+
+  // check if all pacmen are eliminated or if no more food is left
+  let pacmenCount = Object.keys(pacmen).length;
+  let foodCount = 0;
+  for (let i = 0; i < map.length; i++) {
+    for (let j = 0; j < map[i].length; j++) {
+      if (map[i][j] == 2) {
+        foodCount++;
+      }
+    }
+  }
+
+  if (pacmenCount == 0) {
+    io.to(roomID).emit("gameOver", {
+      status: "lose",
+      elimPacmen: gameState.elimPacmen,
+    });
+  } else if (foodCount == 0) {
+    io.to(roomID).emit("gameOver", "win", {
+      status: "win",
+      elimPacmen: gameState.elimPacmen,
+    });
+  }
+
+  if (pacmenCount == 0 || foodCount == 0) {
+    handleGameOver(roomID, gameState);
+  }
 };
 
 let gameLoopInterval = setInterval(serverGameLoop, 1000 / fps);

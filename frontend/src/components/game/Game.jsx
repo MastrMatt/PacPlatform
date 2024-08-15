@@ -13,7 +13,7 @@ import { BACKEND_URL } from "../../config/Constants";
 function Game({ gameType, roomID, numPlayers }) {
   const [loadingGame, setLoadingGame] = useState(true);
 
-  const [socket] = useState(() => io(BACKEND_URL));
+  const [socket, setSocket] = useState(() => io(BACKEND_URL));
   const clientID = useRef("clientID" + Date.now());
 
   const canvasRef = useRef(null);
@@ -57,8 +57,23 @@ function Game({ gameType, roomID, numPlayers }) {
       draw(gameState);
     });
 
-    socket.on("gameOver", (message) => {
-      console.log(message);
+    socket.on("pacmanElim", (clientId) => {
+      if (clientId === clientID.current) {
+        console.log("You have been eliminated");
+      }
+    });
+
+    socket.on("gameOver", ({ status, elimPacmen }) => {
+      // disconnect the socket
+      socket.disconnect();
+      setSocket(null);
+
+      // draw the game over scoreboard
+      if (status == "win") {
+        drawWin(elimPacmen);
+      } else if (status == "lose") {
+        drawLost(elimPacmen);
+      }
     });
 
     let createRect = (ctx, x, y, width, height, color) => {
@@ -66,13 +81,13 @@ function Game({ gameType, roomID, numPlayers }) {
       ctx.fillRect(x, y, width, height);
     };
 
-    let drawWinner = () => {
+    let drawWin = () => {
       ctx.font = "20px PacFont";
       ctx.fillStyle = "white";
       ctx.fillText("You Win!", 130, 250);
     };
 
-    let drawGameOver = () => {
+    let drawLost = () => {
       ctx.font = "20px PacFont";
       ctx.fillStyle = "white";
       ctx.fillText("Game Over!", 130, 250);
@@ -283,6 +298,15 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
+    let drawElim = (ctx) => {
+      let oneBlockSize = Constants.oneBlockSize;
+      let map = Constants.map;
+
+      ctx.font = "20px PacFont";
+      ctx.fillStyle = "white";
+      ctx.fillText("You are out :(", 75, oneBlockSize * (map.length + 1));
+    };
+
     /**
      * Draws the game on the canvas
      * @param {*} gameState - the game state object
@@ -309,8 +333,13 @@ function Game({ gameType, roomID, numPlayers }) {
       drawPacmen(ctx, pacmanFrames, pacmen);
       drawGhosts(ctx, ghostFrames, ghosts);
 
-      drawScore(ctx, myPacman, map);
-      drawLives(ctx, myPacman, map, pacmanFrames);
+      // draw the score and lives if the pacman object has NOT been eliminated
+      if (myPacman) {
+        drawScore(ctx, myPacman, map);
+        drawLives(ctx, myPacman, map, pacmanFrames);
+      } else {
+        drawElim(ctx);
+      }
     };
 
     const handleKeyDown = (e) => {
@@ -340,12 +369,13 @@ function Game({ gameType, roomID, numPlayers }) {
     // add an event listener to the window to listen for keydown events
     window.addEventListener("keydown", handleKeyDown);
 
-    // Cleanup function to clear interval and disconnect socket when component unmounts
+    // Cleanup function to remove socket event listeners and window event listeners for cleanup, happens when the component unmounts
     return () => {
       // remove event listerners here
       socket?.off("allPlayersJoined");
       socket?.off("gameUpdate");
       socket?.off("gameOver");
+      socket?.off("pacmanElim");
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
