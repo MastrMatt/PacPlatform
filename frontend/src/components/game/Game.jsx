@@ -21,11 +21,11 @@ function Game({ gameType, roomID, numPlayers }) {
   const ghostFramesRef = useRef(null);
 
   useEffect(() => {
-    let wallColor = Constants.wallColor;
-    let oneBlockSize = Constants.oneBlockSize;
-    let wallSpaceWidth = Constants.wallSpaceWidth;
-    let wallOffset = Constants.wallOffset;
-    let wallInnerColor = Constants.wallInnerColor;
+    const wallColor = Constants.wallColor;
+    const oneBlockSize = Constants.oneBlockSize;
+    const wallSpaceWidth = Constants.wallSpaceWidth;
+    const wallOffset = Constants.wallOffset;
+    const wallInnerColor = Constants.wallInnerColor;
 
     //  ! the map with the food will be passed in from the backend, remove extra css from project
 
@@ -53,7 +53,6 @@ function Game({ gameType, roomID, numPlayers }) {
     });
 
     socket.on("gameUpdate", (gameState) => {
-      console.log(gameState);
       draw(gameState);
     });
 
@@ -68,29 +67,37 @@ function Game({ gameType, roomID, numPlayers }) {
       socket.disconnect();
       setSocket(null);
 
-      // draw the game over scoreboard
-      if (status == "win") {
-        drawWin(elimPacmen);
-      } else if (status == "lose") {
-        drawLost(elimPacmen);
-      }
+      drawOver(status, elimPacmen);
     });
 
-    let createRect = (ctx, x, y, width, height, color) => {
+    const createRect = (ctx, x, y, width, height, color) => {
       ctx.fillStyle = color;
       ctx.fillRect(x, y, width, height);
     };
 
-    let drawWin = () => {
-      ctx.font = "20px PacFont";
-      ctx.fillStyle = "white";
-      ctx.fillText("You Win!", 130, 250);
-    };
+    const drawOver = (status, elimPacmen) => {
+      let canvas = canvasRef.current;
+      let ctx = canvas.getContext("2d");
 
-    let drawLost = () => {
-      ctx.font = "20px PacFont";
+      // black out the canvas
+      createRect(ctx, 0, 0, canvas.width, canvas.height, "black");
+
+      // draw the title
+      ctx.font = "12px PacFont";
       ctx.fillStyle = "white";
-      ctx.fillText("Game Over!", 130, 250);
+      ctx.fillText(`Pacmen ${status}!`, 140, 120);
+
+      // sort the pacmen by score
+      elimPacmen = Object.entries(elimPacmen).sort(
+        (a, b) => b[1].score - a[1].score
+      );
+
+      // draw all the playerID's and thier scores, like a leader board
+      let y = 240;
+      for (let i of elimPacmen) {
+        ctx.fillText(`${i[0]} scored: ${i[1].score}`, 20, y);
+        y += 20;
+      }
     };
 
     /**
@@ -98,7 +105,7 @@ function Game({ gameType, roomID, numPlayers }) {
      *
      * @param {Array<String>} map - a 2D array of strings
      */
-    let drawWalls = (ctx, map) => {
+    const drawWalls = (ctx, map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 1) {
@@ -168,7 +175,7 @@ function Game({ gameType, roomID, numPlayers }) {
      * @param {*} ctx - canvas context
      * @param {Array<String>} map - a 2D array of strings
      */
-    let drawFoods = (ctx, map) => {
+    const drawFoods = (ctx, map) => {
       for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[0].length; j++) {
           if (map[i][j] == 2) {
@@ -190,7 +197,7 @@ function Game({ gameType, roomID, numPlayers }) {
      * @param {*} ctx - canvas context
      * @param {Pacman} pacman - the pacman object
      */
-    let drawScore = (ctx, pacman, map) => {
+    const drawScore = (ctx, pacman, map) => {
       ctx.font = "18px PacFont";
       ctx.fillStyle = "white";
       ctx.fillText(
@@ -200,7 +207,7 @@ function Game({ gameType, roomID, numPlayers }) {
       );
     };
 
-    let drawGhost = (ctx, ghostFrames, ghost) => {
+    const drawGhost = (ctx, ghostFrames, ghost) => {
       ctx.save();
       ctx.drawImage(
         ghostFrames,
@@ -221,7 +228,7 @@ function Game({ gameType, roomID, numPlayers }) {
      *
      * @param  {Array<Ghost>} ghosts - an array of ghosts
      */
-    let drawGhosts = (ctx, ghostFrames, ghosts) => {
+    const drawGhosts = (ctx, ghostFrames, ghosts) => {
       for (let i = 0; i < ghosts.length; i++) {
         drawGhost(ctx, ghostFrames, ghosts[i]);
       }
@@ -233,7 +240,7 @@ function Game({ gameType, roomID, numPlayers }) {
      * @param {*} ctx - canvas context
      * @param {Pacman} pacman - the pacman object
      */
-    let drawLives = (ctx, pacman, map, pacmanFrames) => {
+    const drawLives = (ctx, pacman, map, pacmanFrames) => {
       let lives = pacman.lives;
 
       ctx.font = "18px PacFont";
@@ -255,7 +262,7 @@ function Game({ gameType, roomID, numPlayers }) {
       }
     };
 
-    let drawPacman = (ctx, pacmanFrames, pacman) => {
+    const drawPacman = (ctx, pacmanFrames, pacman) => {
       // save the canvas context, useful to restore the canvas context later
       ctx.save();
 
@@ -291,14 +298,14 @@ function Game({ gameType, roomID, numPlayers }) {
      * @param {*} pacmanFrames - the image of the pacman
      * @param {Array<Pacman>} pacmen - an object containing all the pacmen
      */
-    let drawPacmen = (ctx, pacmanFrames, pacmen) => {
+    const drawPacmen = (ctx, pacmanFrames, pacmen) => {
       for (let clientID in pacmen) {
         // turn the generic object from socket.io into a Pacman object
         drawPacman(ctx, pacmanFrames, pacmen[clientID]);
       }
     };
 
-    let drawElim = (ctx) => {
+    const drawElim = (ctx) => {
       let oneBlockSize = Constants.oneBlockSize;
       let map = Constants.map;
 
@@ -313,7 +320,7 @@ function Game({ gameType, roomID, numPlayers }) {
      * @param {Array<Pacman>} gameState.pacmen - an object
      *
      */
-    let draw = (gameState) => {
+    const draw = (gameState) => {
       let pacmen = gameState.pacmen;
       let myPacman = pacmen[clientID.current];
 

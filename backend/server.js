@@ -67,7 +67,8 @@ const gameStateInit = (players) => {
     pacmen: playerPacmen,
     elimPacmen: {},
     ghosts: ghosts,
-    map: map.slice(),
+    // create a deep copy of the map
+    map: JSON.parse(JSON.stringify(map)),
   };
 };
 
@@ -99,7 +100,6 @@ io.on("connection", (socket) => {
         "All players have joined the room"
       );
     }
-    console.log(gameRooms);
   });
 
   socket.on("joinRoom", ({ clientID, roomID }) => {
@@ -123,8 +123,6 @@ io.on("connection", (socket) => {
         "All players have joined the room"
       );
     }
-
-    console.log(gameRooms);
   });
 
   socket.on("keyDown", ({ roomID, clientID, direction }) => {
@@ -219,8 +217,12 @@ let handleGameOver = (roomID, gameState) => {
   // delete the room from the gameRooms object
   delete gameRooms[roomID];
 
+  console.log(map);
+  console.log(gameRooms);
+
   // ! perforn any backend logic here related to game over, like updating the database for the scores
   // ! NOTE: you have acess to the gameState object here
+  // ! Remember to also handle auth of game creation and joining and user auth when db client is done
 };
 
 let update = (roomID, gameState) => {
@@ -231,7 +233,7 @@ let update = (roomID, gameState) => {
   // update the pacmen
   for (let clientID in pacmen) {
     pacmen[clientID].moveProcess();
-    pacmen[clientID].eat();
+    pacmen[clientID].eat(gameState.map);
   }
 
   // update the ghosts

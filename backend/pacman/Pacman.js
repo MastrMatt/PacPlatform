@@ -149,9 +149,7 @@ class Pacman {
       this.currentFrame == this.frameCount ? 1 : this.currentFrame + 1;
   }
 
-  eat() {
-    let map = Constants.map;
-
+  eat(map) {
     for (let i = 0; i < map.length; i++) {
       for (let j = 0; j < map[0].length; j++) {
         if (map[i][j] == 2 && this.getMapX() == j && this.getMapY() == i) {
