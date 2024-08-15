@@ -113,7 +113,12 @@ function GameSetup() {
   };
 
   return startGame ? (
-    <Game gameType={gameType} roomID={roomID} numPlayers={numPlayers} />
+    <Game
+      setStartGame={setStartGame}
+      gameType={gameType}
+      roomID={roomID}
+      numPlayers={numPlayers}
+    />
   ) : (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <Card className="w-full max-w-3xl m-4">

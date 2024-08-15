@@ -19,6 +19,8 @@ const config = {
     },
     extend: {
       colors: {
+        navBar: "#006699",
+        navBarHover: "#f0ecec",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

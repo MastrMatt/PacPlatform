@@ -2,16 +2,18 @@ import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-import { LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle } from "lucide-react";
 import animationGif from "../../assets/animations.gif";
 import ghostImage from "../../assets/ghost.png";
 
 import * as Constants from "./Constants";
 
 import { BACKEND_URL } from "../../config/Constants";
+import { Button } from "../ui/button";
 
-function Game({ gameType, roomID, numPlayers }) {
+function Game({ setStartGame, gameType, roomID, numPlayers }) {
   const [loadingGame, setLoadingGame] = useState(true);
+  const [gameOver, setGameOver] = useState(false);
 
   const [socket, setSocket] = useState(() => io(BACKEND_URL));
   const clientID = useRef("clientID" + Date.now());
@@ -20,14 +22,13 @@ function Game({ gameType, roomID, numPlayers }) {
   const pacmanFramesRef = useRef(null);
   const ghostFramesRef = useRef(null);
 
+  // ! Add a back button for when the game is over
   useEffect(() => {
     const wallColor = Constants.wallColor;
     const oneBlockSize = Constants.oneBlockSize;
     const wallSpaceWidth = Constants.wallSpaceWidth;
     const wallOffset = Constants.wallOffset;
     const wallInnerColor = Constants.wallInnerColor;
-
-    //  ! the map with the food will be passed in from the backend, remove extra css from project
 
     const DIRECTION_RIGHT = Constants.DIRECTION_RIGHT;
     const DIRECTION_UP = Constants.DIRECTION_UP;
@@ -66,6 +67,7 @@ function Game({ gameType, roomID, numPlayers }) {
       // disconnect the socket
       socket.disconnect();
       setSocket(null);
+      setGameOver(true);
 
       drawOver(status, elimPacmen);
     });
@@ -406,6 +408,19 @@ function Game({ gameType, roomID, numPlayers }) {
         <img src={animationGif} ref={pacmanFramesRef} alt="" />
         <img src={ghostImage} ref={ghostFramesRef} alt="" />
       </div>
+
+      {gameOver && (
+        <Button
+          variant="secondary "
+          className="bg-navBar hover:bg-navBarHover flex items-center justify-center "
+          onClick={() => {
+            setStartGame(false);
+          }}
+        >
+          <ChevronRight className="text-primary" />{" "}
+          <span className="text-primary">Play Again</span>
+        </Button>
+      )}
     </div>
   );
 }
