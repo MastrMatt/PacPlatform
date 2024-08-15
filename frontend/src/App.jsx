@@ -3,26 +3,19 @@ import { useState } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 
 import MainLayout from "./components/mainLayout/MainLayout";
-import Game from "./components/game/Game";
 import GameSetup from "./components/gameSetup/GameSetup";
 
 function App() {
   return (
     <MainLayout>
       <Routes>
-        <Route path="/Home" element={<GameSetup />} />
+        <Route path="/" element={<Navigate to="/home" />} />
+        <Route path="/home" element={<GameSetup />} />
+        {/* <Route path="/friendRequests" element={<friendRequests />} /> */}
 
-        <Route path="/game/:roomID" element={<Game />} />
+        {/* <Route path="/search" element={<Search />} /> */}
 
-        {/* <Route path="/FriendRequests" element={<FollowRequests />} /> */}
-
-        {/* <Route path="/Post" element={<Posting />} /> */}
-
-        {/* <Route path="/Search" element={<AuthorSearch />} /> */}
-
-        {/* <Route path="/SearchRemote" element={<SearchRemote />} /> */}
-
-        {/* <Route path = "/HomeRemote" element = {<HomeRemote />} /> */}
+        {/* <Route path="/profile" element={<Profile />} /> */}
       </Routes>
     </MainLayout>
   );

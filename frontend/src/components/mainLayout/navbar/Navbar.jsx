@@ -24,28 +24,28 @@ function Navbar() {
       <nav className="navBar">
         <ul className="navBarNav">
           <li className="navBarItem">
-            <NavLink to="/Home" id="navHomeLinkId" className="navLink" end>
+            <NavLink to="/home" id="navHomeLinkId" className="navLink" end>
               <FaHome size={35} className="navIcons" />
               <span>Home</span>
             </NavLink>
           </li>
 
           <li className="navBarItem">
-            <NavLink to="/author" className="navLink" end>
+            <NavLink to="/profile" className="navLink" end>
               <FaUser size={35} className="navIcons" />
               <span>Profile</span>
             </NavLink>
           </li>
 
           <li className="navBarItem">
-            <NavLink to="/FriendRequests" className="navLink" end>
+            <NavLink to="/friendRequests" className="navLink" end>
               <FaInbox className="navIcons" size={35} />
               <span>Requests</span>
             </NavLink>
           </li>
 
           <li className="navBarItem">
-            <NavLink to="/Search" className="navLink" end>
+            <NavLink to="/search" className="navLink" end>
               <FaSearch size={35} className="navIcons" />
               <span>Search</span>
             </NavLink>
