@@ -77,7 +77,8 @@ const Signup = () => {
 
 				console.error(data.error);
 			}
-			setIsLoading(false);
+
+			console.log(await data.json());
 
 			// redirect to login page
 			navigate("/login");

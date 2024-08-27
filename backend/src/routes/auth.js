@@ -12,6 +12,26 @@ console.log();
 
 const authRouter = Router();
 
+// create a user object and store it in the database, user object
+const createUser = (username, password) => {
+	const userString = `users:${username}`;
+
+	const user = {
+		username,
+		password,
+		score: 0,
+	};
+
+	db.hSetObject(userString, user);
+
+	return serializeUser(user);
+};
+
+const serializeUser = (user) => {
+	const { password, ...rest } = user;
+	return rest;
+};
+
 authRouter.post("/login", (req, res) => {
 	// handle login here
 	const { username, password } = req.body;
@@ -51,17 +71,9 @@ authRouter.post("/signup", async (req, res) => {
 		return res.status(401).json({ message: "User already exists" });
 	}
 
-	// create the user
-	const user = {
-		username,
-		password,
-		score : 0,
-		
-	};
+	const user = createUser(username, password);
 
 	try {
-		db.hSetObject(userString, user);
-
 		// generate a jwt token
 		const token = jwt.sign(user, process.env.JWT_SECRET, {
 			expiresIn: "1h",
@@ -70,7 +82,7 @@ authRouter.post("/signup", async (req, res) => {
 		// add a header to signal the browser to store the cookie
 		res.cookie("token", token, { httpOnly: true });
 
-		return res.json(user);
+		return res.json(serializeUser(user));
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Internal Server Error" });
