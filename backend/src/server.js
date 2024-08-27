@@ -10,15 +10,14 @@ import {
 	fps,
 	map,
 	ghostCount,
-	oneBlockSize,
 	DIRECTION_UP,
 	DIRECTION_BOTTOM,
 	DIRECTION_LEFT,
 	DIRECTION_RIGHT,
 } from "./pacman/Constants.js";
 
-import { create4Pacmen, Pacman } from "./pacman/Pacman.js";
-import { createNewGhosts, Ghost } from "./pacman/Ghost.js";
+import { create4Pacmen } from "./pacman/Pacman.js";
+import { createNewGhosts } from "./pacman/Ghost.js";
 
 // ! Can use supertest to test the server
 
