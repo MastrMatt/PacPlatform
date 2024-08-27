@@ -1,6 +1,15 @@
 // express is a CommonJS module, so we use require to import it
 import express from "express";
+import { Router } from "express";
+
+// routers
+import { authRouter } from "./routes/auth.js";
+import { userRouter } from "./routes/user.js";
+
 import cors from "cors";
+// import dotenv and configure it
+import { configDotenv } from "dotenv";
+configDotenv();
 
 import cookieParser from "cookie-parser";
 
@@ -33,7 +42,16 @@ app.use(cors(corsOptions));
 // can acess cookies from the request object using req.cookies
 app.use(cookieParser());
 
-// attach the routes to the express app
+// app json body parser middleware
+app.use(express.json());
+
+// attach the routes to the express app api router
+const apiRouter = Router();
+
+apiRouter.use("/auth", authRouter);
+apiRouter.use("/users", userRouter);
+
+app.use("/api", apiRouter);
 
 // create a http server, attach the express app to it and create a socket.io server on the same http server, also setup cors options
 const httpServer = createServer(app);
