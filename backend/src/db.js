@@ -1,15 +1,25 @@
 import { createClient } from "litedb-node";
 
-const db = createClient().on("error", (err) => console.error(err));
-
 // import dotenv and configure it
 import { configDotenv } from "dotenv";
 configDotenv();
 
-// default port for the litedb server is 9255
-await db.connect({
-	host: "localhost",
-	port: process.env.LITEDB_PORT || 9255,
-});
+// create a singleton db object
+let db;
+
+let startClient = async () => {
+	if (db) {
+		return;
+	} else {
+		db = createClient().on("error", (err) => console.error(err));
+
+		await db.connect({
+			host: "localhost",
+			port: process.env.LITEDB_PORT || 9255,
+		});
+	}
+};
+
+await startClient();
 
 export { db };

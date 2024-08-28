@@ -3,14 +3,19 @@ import { Router } from "express";
 import { db } from "../db.js";
 
 import { createUser, serializeUser } from "./user.js";
+
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 // import dotenv and configure it
 import { configDotenv } from "dotenv";
 configDotenv();
 
+import { cookieJwtAuth } from "../middleware/cookieJwtAuth.js";
+
 const authRouter = Router();
 
+// checks if a user with the given id exists
 authRouter.get("/user/:id", async (req, res, next) => {
 	try {
 		const { id } = req.params;
@@ -19,13 +24,11 @@ authRouter.get("/user/:id", async (req, res, next) => {
 		const userExists = await db.exists(`users:${id}`);
 
 		// rest API , if user does not exist, return empty object, never return errors as a response to any valid queries, leads to difficulty debugging and is unclear
-		if (!userExists) {
-			return res.json({});
+		if (userExists) {
+			return res.json({ exists: true });
+		} else {
+			return res.json({ exists: false });
 		}
-
-		const user = await db.hGetAll(`users:${id}`);
-
-		return res.json(user);
 	} catch (error) {
 		next(error);
 	}
@@ -54,7 +57,7 @@ authRouter.post("/signup", async (req, res, next) => {
 			// add a header to signal the browser to store the cookie
 			res.cookie("token", token, { httpOnly: true });
 
-			return res.json(serializeUser(user));
+			return res.json(user);
 		} catch (error) {
 			console.error(error);
 			res.status(500).json({ error: "Internal Server Error" });
@@ -82,15 +85,15 @@ authRouter.post("/login", async (req, res, next) => {
 		// check if the password is correct
 		const user = await db.hGetAll(userString);
 
-		if (user.password !== password) {
-			return res
-				.status(401)
-				.json({ message: "Invalid user credentials" });
+		const passwordMatch = await bcrypt.compare(password, user.password);
+
+		if (!passwordMatch) {
+			return res.status(401).json({ message: "Incorrect password" });
 		}
 
 		// generate a jwt token
 		const token = jwt.sign(user, process.env.JWT_SECRET, {
-			expiresIn: "1h",
+			expiresIn: "15m",
 		});
 
 		// add a header to signal the browser to store the cookie
