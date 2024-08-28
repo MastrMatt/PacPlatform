@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-import { SIGNUP_URL, USERS_URL } from "@/Constants";
+import { AuthService } from "@/api/AuthService";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -34,56 +34,16 @@ const Signup = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
-	const checkUserAvailable = async (username) => {
-		try {
-			// make an api request here to check if the user exists
-			const data = await fetch(`${USERS_URL}/${username}`, {
-				method: "GET",
-			});
-
-			if (!data.ok) {
-				throw new Error("Error acessing user resource");
-			}
-
-			const user = await data.json();
-
-			if (Object.keys(user).length > 0) {
-				// if asynch validation fails, set is loading to false
-				setIsLoading(false);
-				return false;
-			} else {
-				return true;
-			}
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	const signUpFormSubmit = async (values) => {
+	const signUpFormSubmit = async ({ username, password }) => {
 		setIsLoading(true);
 
 		try {
-			let data = await fetch(SIGNUP_URL, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(values),
-			});
+			await AuthService.signup(username, password);
 
-			if (!data.ok) {
-				// print the error message from server
-				data = await data.json();
-
-				console.error(data.error);
-			}
-
-			console.log(await data.json());
-
-			// redirect to login page
+			// navigate to the login page
 			navigate("/login");
 		} catch (error) {
-			console.error(error);
+			console.error(error.response.data);
 		}
 	};
 	const signUpFormSchema = z.object({
@@ -95,7 +55,7 @@ const Signup = () => {
 			.max(20, {
 				message: "Username must be at most 20 characters",
 			})
-			.refine(checkUserAvailable, {
+			.refine(AuthService.checkUserAvailable, {
 				message: "Username has already been taken",
 			}),
 

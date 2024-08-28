@@ -2,6 +2,8 @@
 import express from "express";
 import { Router } from "express";
 
+// ! Note express does not support async function error handling, need to wrap in async router/app methods in a try catch and pass the error to the next middleware
+
 // routers
 import { authRouter } from "./routes/auth.js";
 import { userRouter } from "./routes/user.js";
@@ -28,12 +30,15 @@ import {
 import { create4Pacmen } from "./pacman/Pacman.js";
 import { createNewGhosts } from "./pacman/Ghost.js";
 
-// ! Can use supertest to test the server
-
 const app = express();
 
 const corsOptions = {
-	origin: "*",
+	origin: [
+		"http://localhost:5173",
+		"http://localhost:5174",
+		"http://localhost:5175",
+	], // Replace with your actual client origin
+	credentials: true,
 };
 
 // add some global middleware to the express app

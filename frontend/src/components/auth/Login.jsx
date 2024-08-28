@@ -1,4 +1,13 @@
+/**
+ * Login component for user authentication.
+ *
+ * @returns {JSX.Element} The rendered Login component.
+ */
 import React from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { AuthService } from "@/api/AuthService";
 
 import { LOGIN_URL } from "@/Constants";
 
@@ -23,15 +32,24 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 
+import { AlertCircle } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 import { LoaderCircle } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const loginFormSubmit = (values) => {};
+
 
 const Login = () => {
+	const [isLoading, setIsLoading] = useState(false);
+	const [loginError, setLoginError] = useState("");
+
+	const navigate = useNavigate();
+
 	const loginFormSchema = z.object({
 		username: z.string().max(20, {
 			message: "Username cannot be more than 20 characters",
@@ -50,9 +68,36 @@ const Login = () => {
 		},
 	});
 
+	const loginFormSubmit = async ({ username, password }) => {
+		setIsLoading(true);
+
+		try {
+			const response = await AuthService.login(username, password);
+
+			// navigate to the home page if successful
+			navigate("/home");
+		} catch (error) {
+			if (
+				error.response.status === 401 ||
+				error.response.status === 403
+			) {
+				setLoginError(
+					"Incorrect username or password. Please try again."
+				);
+			} else {
+				setLoginError("An error occurred. Please try again later.");
+			}
+
+			console.error(error.response.data);
+			loginForm.reset();
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return (
 		<div className="w-screen h-screen flex justify-center items-center">
-			<Card className="m-2 w-full flex flex-col gap-4 max-w-xl">
+			<Card className=" mx-2 w-full flex flex-col gap-4 max-w-xl">
 				<CardHeader>
 					<CardTitle className="text-2xl">Login</CardTitle>
 					<CardDescription>
@@ -61,7 +106,13 @@ const Login = () => {
 				</CardHeader>
 
 				<CardContent>
-					{" "}
+					{loginError && (
+						<Alert variant="destructive" className="mb-4">
+							<AlertCircle className="h-4 w-4" />
+							<AlertTitle>Error</AlertTitle>
+							<AlertDescription>{loginError}</AlertDescription>
+						</Alert>
+					)}
 					<Form {...loginForm}>
 						<form
 							onSubmit={loginForm.handleSubmit(loginFormSubmit)}
@@ -102,9 +153,18 @@ const Login = () => {
 									);
 								}}
 							/>
-							<LoaderCircle className="w-10 h-10 animate-spin" />
 
-							<Button type="submit">Login</Button>
+							<Button type="submit">
+								{" "}
+								{isLoading ? (
+									<>
+										<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+										Logging in...
+									</>
+								) : (
+									"Login"
+								)}
+							</Button>
 						</form>
 					</Form>
 					<div className="mt-4 text-center text-sm">
