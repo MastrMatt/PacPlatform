@@ -6,18 +6,24 @@ import {
 	SIGNUP_URL,
 	LOGIN_URL,
 	LOGOUT_URL,
-} from "../Constants";
+	USERS_URL,
+	CHECK_AUTH_URL,
+} from "./APIConstants";
 
 const AuthService = {
+	checkAuth: async () => {
+		// only get here is the user is authenticated, axios interceptor will handle 401 and 403
+		const response = await requestClient.get(CHECK_AUTH_URL);
+		console.log(response.data);
+	},
+
 	checkUserAvailable: async (username) => {
 		try {
 			const response = await requestClient.get(
 				`${CHECK_USERS_URL}/${username}`
 			);
 
-			console.log(response.data);
-
-			if (Object.keys(response.data).length > 0) {
+			if (response.data.exists) {
 				return false;
 			} else {
 				return true;
@@ -33,7 +39,7 @@ const AuthService = {
 			password,
 		});
 
-		return response.data;
+		return response;
 	},
 
 	login: async (username, password) => {
@@ -42,13 +48,13 @@ const AuthService = {
 			password,
 		});
 
-		return response.data;
+		return response;
 	},
 
 	logout: async () => {
 		const response = await requestClient.post(LOGOUT_URL);
 
-		return response.data;
+		return response;
 	},
 };
 

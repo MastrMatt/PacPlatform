@@ -1,10 +1,11 @@
-import { createClient } from "litedb-node";
+import { createClient, LiteDBClient } from "litedb-node";
 
 // import dotenv and configure it
 import { configDotenv } from "dotenv";
 configDotenv();
 
 // create a singleton db object
+/**@type {LiteDBClient} */
 let db;
 
 let startClient = async () => {

@@ -8,6 +8,7 @@ import {
 	useNavigate,
 } from "react-router-dom";
 
+import Profile from "./components/profile/Profile";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import MainLayout from "./components/mainLayout/MainLayout";
@@ -40,7 +41,7 @@ function App() {
 
 				{/* <Route path="/search" element={<Search />} /> */}
 
-				{/* <Route path="/profile" element={<Profile />} /> */}
+				<Route path="/profile" element={<Profile />} />
 			</Routes>
 		</Layout>
 	);

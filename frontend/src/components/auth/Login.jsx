@@ -9,8 +9,6 @@ import { useNavigate } from "react-router-dom";
 
 import { AuthService } from "@/api/AuthService";
 
-import { LOGIN_URL } from "@/Constants";
-
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,8 +40,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-
-
 const Login = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [loginError, setLoginError] = useState("");
@@ -74,12 +70,15 @@ const Login = () => {
 		try {
 			const response = await AuthService.login(username, password);
 
+			// set the response data in local storage
+			localStorage.setItem("username", response.data.username);
+
 			// navigate to the home page if successful
 			navigate("/home");
 		} catch (error) {
 			if (
-				error.response.status === 401 ||
-				error.response.status === 403
+				error?.response?.status === 401 ||
+				error?.response?.status === 403
 			) {
 				setLoginError(
 					"Incorrect username or password. Please try again."
@@ -88,7 +87,7 @@ const Login = () => {
 				setLoginError("An error occurred. Please try again later.");
 			}
 
-			console.error(error.response.data);
+			console.error(error);
 			loginForm.reset();
 		} finally {
 			setIsLoading(false);

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { API_URL } from "@/Constants";
+import { API_URL } from "@/api/APIConstants";
 import { AuthService } from "./AuthService";
 
 // want to create an interceptor that redirects to the login page if 401 or 403

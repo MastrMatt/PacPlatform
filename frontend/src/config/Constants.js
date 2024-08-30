@@ -1,1 +1,0 @@
-export const BACKEND_URL = "http://localhost:42069"; // URL of the backend

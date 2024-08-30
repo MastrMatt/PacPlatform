@@ -10,14 +10,6 @@ const userRouter = Router();
 // add router level cookieJwtAuth middleware, all these routes will require a valid jwt token
 userRouter.use(cookieJwtAuth);
 
-// create a user object and store it in the database, return the serialized user object
-const createUser = (username, password) => {
-	storeUser(username, password);
-	return {
-		username,
-	};
-};
-
 const storeUser = async (username, password) => {
 	const userString = `users:${username}`;
 
@@ -38,15 +30,38 @@ const storeUser = async (username, password) => {
 	return serializeUser(user);
 };
 
+// create a user object and store it in the database, return the username (userID)
+const createUser = (username, password) => {
+	storeUser(username, password);
+	return {
+		username,
+	};
+};
+
 // serialize the user object to remove the password field
 const serializeUser = (user) => {
 	const { hashedPasword, ...rest } = user;
 	return rest;
 };
 
-userRouter.get("/user/:id", (req, res) => {
-	// if reached here, the user is authenticated by cookieJwtAuth middleware
-	return res.json(serializeUser(req.user));
+userRouter.get("/user/:id", async (req, res) => {
+	try {
+		// if reached here, the user is authenticated by cookieJwtAuth middleware
+		// fetch the user object from the db
+		const { username } = req.user;
+		const userString = `users:${username}`;
+
+		// check if the user exists
+		const user = await db.hGetAll(userString);
+
+		if (Object.keys(user).length === 0) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		res.json(serializeUser(user));
+	} catch (error) {
+		next(error);
+	}
 });
 
 export { userRouter, createUser, serializeUser };
