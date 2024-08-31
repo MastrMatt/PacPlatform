@@ -8,11 +8,13 @@ import {
 	useNavigate,
 } from "react-router-dom";
 
-import Profile from "./components/profile/Profile";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import MainLayout from "./components/mainLayout/MainLayout";
 import GameSetup from "./components/gameSetup/GameSetup";
+import Profile from "./components/profile/Profile";
+import FriendRequests from "./components/friendRequests/FriendRequests";
+import Search from "./components/search/SearchPeople";
 
 function App() {
 	const location = useLocation();
@@ -37,10 +39,8 @@ function App() {
 				<Route path="/login" element={<Login />} />
 				<Route path="/signup" element={<Signup />} />
 				<Route path="/home" element={<GameSetup />} />
-				{/* <Route path="/friendRequests" element={<friendRequests />} /> */}
-
-				{/* <Route path="/search" element={<Search />} /> */}
-
+				<Route path="/friendRequests" element={<FriendRequests />} />
+				<Route path="/search" element={<Search />} />
 				<Route path="/profile" element={<Profile />} />
 			</Routes>
 		</Layout>

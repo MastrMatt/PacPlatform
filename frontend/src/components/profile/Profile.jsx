@@ -25,7 +25,19 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+import { Button } from "@/components/ui/button";
+
 import { Separator } from "@/components/ui/separator";
 
 const invoices = [
@@ -71,19 +83,31 @@ const invoices = [
 		totalAmount: "$300.00",
 		paymentMethod: "Credit Card",
 	},
+	{
+		invoice: "INV007",
+		paymentStatus: "Unpaid",
+		totalAmount: "$300.00",
+		paymentMethod: "Credit Card",
+	},
+	{
+		invoice: "INV007",
+		paymentStatus: "Unpaid",
+		totalAmount: "$300.00",
+		paymentMethod: "Credit Card",
+	},
+	{
+		invoice: "INV007",
+		paymentStatus: "Unpaid",
+		totalAmount: "$300.00",
+		paymentMethod: "Credit Card",
+	},
+	{
+		invoice: "INV007",
+		paymentStatus: "Unpaid",
+		totalAmount: "$300.00",
+		paymentMethod: "Credit Card",
+	},
 ];
-
-import { Button } from "@/components/ui/button";
-
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Car } from "lucide-react";
 
 export default function Profile() {
 	const [username, setUsername] = useState(() =>
@@ -104,55 +128,45 @@ export default function Profile() {
 
 	return (
 		<div className="w-full h-screen flex flex-col items-center justify-evenly md:flex-row gap-10">
-			<div className=" m-1 h-2/3 w-2/5 rounded-md border-2 border-foreground shadow-2xl shadow-foreground">
-				<div className=" h-1/4 flex flex-row align-center justify-center gap-8 ">
-					<Avatar className="h-15 w-15 ">
+			<div className="w-2/5 rounded-md shadow-2xl shadow-foreground flex flex-col gap-12">
+				<div className=" h-1/4 flex flex-row items-center justify-center gap-8 ">
+					<Avatar className="mt-1 w-8 h-8  md:w-16 md:h-16">
 						<AvatarImage src="https://github.com/shadcn.png" />
 						<AvatarFallback>Your Image</AvatarFallback>
 					</Avatar>
-					<div className="font-bold my-auto">{username}</div>
+					<div className=" font-bold ">{username}</div>
 				</div>
-				<Separator className="my-4 bg-black" />
-				<Table>
-					<TableCaption>A list of your recent invoices.</TableCaption>
-					<TableHeader>
-						<TableRow>
-							<TableHead className="w-[100px]">Invoice</TableHead>
-							<TableHead>Status</TableHead>
-							<TableHead>Method</TableHead>
-							<TableHead className="text-right">Amount</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{invoices.map((invoice) => (
-							<TableRow key={invoice.invoice}>
-								<TableCell className="font-medium">
-									{invoice.invoice}
-								</TableCell>
-								<TableCell>{invoice.paymentStatus}</TableCell>
-								<TableCell>{invoice.paymentMethod}</TableCell>
-								<TableCell className="text-right">
-									{invoice.totalAmount}
-								</TableCell>
+				<Card className="h-full">
+					<CardContent className="flex flex-col">
+						<Table>
+							<TableRow>
+								<TableCell>Highest Score</TableCell>
+								<TableCell>50</TableCell>
 							</TableRow>
-						))}
-					</TableBody>
-					<TableFooter>
-						<TableRow>
-							<TableCell colSpan={3}>Total</TableCell>
-							<TableCell className="text-right">
-								$2,500.00
-							</TableCell>
-						</TableRow>
-					</TableFooter>
-				</Table>
+							<TableRow>
+								<TableCell>Highest Score</TableCell>
+								<TableCell>50</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Highest Score</TableCell>
+								<TableCell>50</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Highest Score</TableCell>
+								<TableCell>50</TableCell>
+							</TableRow>
+						</Table>
+					</CardContent>
 
-				<div className="flex flex-col "></div>
+					<CardFooter className="flex flex-row justify-center">
+						<Button>View Friends</Button>
+					</CardFooter>
+				</Card>
 			</div>
 
-			<div className="m-1 p-2 h-2/3 w-2/5 rounded-md border-2 border-foreground shadow-2xl shadow-foreground">
-				<div className="p-6 flex flex-row items-center justify-center gap-20 border-b-2">
-					<div className="text-center pb-4 ">Leaderboard</div>
+			<Card className=" h-3/4 w-2/5 rounded-md shadow-2xl shadow-foreground">
+				<CardHeader className="flex flex-row items-center justify-center gap-20 ">
+					<div className="text-center font-bold">Leaderboard</div>
 
 					<Select onValueChange={handleSelectChange}>
 						<SelectTrigger className="w-[180px]">
@@ -173,24 +187,19 @@ export default function Profile() {
 							</SelectGroup>
 						</SelectContent>
 					</Select>
-				</div>
+				</CardHeader>
 
-				<div className="flex flex-col h-full">
-					<ScrollArea className="h-2/3 w-full rounded-md border">
+				<CardContent className="h-full">
+					<ScrollArea className="h-4/5 w-full rounded-md border">
 						<Table>
 							<TableCaption>
 								A list of your recent invoices.
 							</TableCaption>
 							<TableHeader>
 								<TableRow>
-									<TableHead className="w-[100px]">
-										Invoice
-									</TableHead>
+									<TableHead>Invoice</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Method</TableHead>
-									<TableHead className="text-right">
-										Amount
-									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -205,24 +214,13 @@ export default function Profile() {
 										<TableCell>
 											{invoice.paymentMethod}
 										</TableCell>
-										<TableCell className="text-right">
-											{invoice.totalAmount}
-										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
-							<TableFooter>
-								<TableRow>
-									<TableCell colSpan={3}>Total</TableCell>
-									<TableCell className="text-right">
-										$2,500.00
-									</TableCell>
-								</TableRow>
-							</TableFooter>
 						</Table>
 					</ScrollArea>
-				</div>
-			</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
