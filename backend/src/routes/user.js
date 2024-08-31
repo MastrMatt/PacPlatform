@@ -65,4 +65,24 @@ userRouter.get("/user/:id", async (req, res) => {
 	}
 });
 
+// get all users which name starts with the given string
+userRouter.get("/:id", async (req, res) => {
+	try {
+		const searchString = req.params.id;
+		const keys = await db.keys();
+
+		const users = keys.filter((key) => key.startsWith("users:"));
+
+		const usernames = users.map((user) => user.split(":")[1]);
+
+		const filteredUsers = usernames.filter((username) =>
+			username.startsWith(searchString)
+		);
+
+		res.json({ users: filteredUsers });
+	} catch (error) {
+		next(error);
+	}
+});
+
 export { userRouter, createUser, serializeUser };
