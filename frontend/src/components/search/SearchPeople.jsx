@@ -1,4 +1,7 @@
 import React from "react";
+import { useState, useEffect } from "react";
+
+import { AuthService } from "@/api/AuthService";
 
 import {
 	Card,
@@ -17,6 +20,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 
 export default function SearchPeople() {
+	useEffect(() => {
+		try {
+			AuthService.checkAuth();
+		} catch (error) {
+			console.error("Check auth failed " + error.response.data);
+		}
+	}, []);
 	return (
 		<div className=" w-full flex items-center justify-center">
 			<Card className="m-2 w-2/3">

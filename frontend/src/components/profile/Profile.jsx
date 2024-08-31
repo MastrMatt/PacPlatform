@@ -1,3 +1,5 @@
+import React from "react";
+
 import { useState, useEffect } from "react";
 
 import { AuthService } from "@/api/AuthService";
@@ -110,6 +112,13 @@ const invoices = [
 ];
 
 export default function Profile() {
+	useEffect(() => {
+		try {
+			AuthService.checkAuth();
+		} catch (error) {
+			console.error("Check auth failed " + error.response.data);
+		}
+	}, []);
 	const [username, setUsername] = useState(() =>
 		localStorage.getItem("username")
 	);
@@ -159,7 +168,7 @@ export default function Profile() {
 					</CardContent>
 
 					<CardFooter className="flex flex-row justify-center">
-						<Button>View Friends</Button>
+						<Button>Sign Out</Button>
 					</CardFooter>
 				</Card>
 			</div>

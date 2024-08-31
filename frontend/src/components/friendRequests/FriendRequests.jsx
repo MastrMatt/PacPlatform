@@ -1,5 +1,10 @@
 import React from "react";
 
+import { useState, useEffect } from "react";
+
+import { AuthService } from "@/api/AuthService";
+import { requestClient } from "@/api/apiClient";
+
 import {
 	Card,
 	CardHeader,
@@ -16,7 +21,31 @@ import { Button } from "@/components/ui/button";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// function to make a friend request
+async function makeFriendRequest(username, requestUsername) {
+	try {
+		const response = await requestClient.post(
+			`/friendRequests/${username}`,
+			{
+				requestUsername: requestUsername,
+			}
+		);
+
+		return response.data.message;
+	} catch (error) {
+		console.error("Make friend request failed " + error);
+	}
+}
+
 export default function FriendRequests() {
+	useEffect(() => {
+		try {
+			AuthService.checkAuth();
+		} catch (error) {
+			console.error("Check auth failed " + error);
+		}
+	}, []);
+
 	return (
 		<div className=" w-full flex items-center justify-center">
 			<Card className="m-2 w-2/3">

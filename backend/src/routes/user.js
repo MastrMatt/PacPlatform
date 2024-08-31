@@ -44,11 +44,12 @@ const serializeUser = (user) => {
 	return rest;
 };
 
+// get the user object from the database and serialize it before sending it to the client
 userRouter.get("/user/:id", async (req, res) => {
 	try {
 		// if reached here, the user is authenticated by cookieJwtAuth middleware
 		// fetch the user object from the db
-		const { username } = req.user;
+		const username = req.params.id;
 		const userString = `users:${username}`;
 
 		// check if the user exists

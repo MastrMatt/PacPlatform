@@ -12,7 +12,7 @@ let startClient = async () => {
 	if (db) {
 		return;
 	} else {
-		db = createClient().on("error", (err) => console.error(err));
+		db = createClient();
 
 		await db.connect({
 			host: "localhost",
