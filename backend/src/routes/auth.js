@@ -41,7 +41,7 @@ authRouter.get("/user/:id", async (req, res, next) => {
  */
 authRouter.post("/signup", async (req, res, next) => {
 	try {
-		const { username, password } = req.body;
+		const { username, password, imageURL } = req.body;
 
 		const userString = `users:${username}`;
 
@@ -51,7 +51,7 @@ authRouter.post("/signup", async (req, res, next) => {
 			return res.status(401).json({ message: "User already exists" });
 		}
 
-		const verifiedUsername = createUser(username, password);
+		const verifiedUsername = createUser(username, password, imageURL);
 
 		// generate a jwt token
 		const token = jwt.sign(

@@ -3,6 +3,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 
 import { AuthService } from "@/api/AuthService";
+import { requestClient } from "@/api/apiClient";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -41,6 +42,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
 import { Separator } from "@/components/ui/separator";
+import { USERS_URL } from "@/api/APIConstants";
+import { Loader2 } from "lucide-react";
 
 const invoices = [
 	{
@@ -112,35 +115,47 @@ const invoices = [
 ];
 
 export default function Profile() {
-	useEffect(() => {
-		try {
-			AuthService.checkAuth();
-		} catch (error) {
-			console.error("Check auth failed " + error.response.data);
-		}
-	}, []);
 	const [username, setUsername] = useState(() =>
 		localStorage.getItem("username")
 	);
 
+	const [user, setUser] = useState(null);
+
+	// returns the user object from the backend
+	async function retrieveUser(username) {
+		try {
+			const response = await requestClient.get(
+				USERS_URL + "/user" + "/" + username
+			);
+
+			console.log(response.data);
+			setUser(response.data);
+		} catch (error) {
+			console.error(
+				"Get user info failed for profile page " + error.response.data
+			);
+		}
+	}
+
 	useEffect(() => {
 		try {
 			AuthService.checkAuth();
+			retrieveUser(username);
 		} catch (error) {
 			console.error("Check auth failed " + error.response.data);
 		}
-	}, []);
+	}, [username]);
 
 	const handleSelectChange = (value) => {
 		console.log(value);
 	};
 
-	return (
+	return user ? (
 		<div className="w-full h-screen flex flex-col items-center justify-evenly md:flex-row gap-10">
 			<div className="w-2/5 rounded-md shadow-2xl shadow-foreground flex flex-col gap-12">
 				<div className=" h-1/4 flex flex-row items-center justify-center gap-8 ">
 					<Avatar className="mt-1 w-8 h-8  md:w-16 md:h-16">
-						<AvatarImage src="https://github.com/shadcn.png" />
+						<AvatarImage src={user.imageURL} />
 						<AvatarFallback>Your Image</AvatarFallback>
 					</Avatar>
 					<div className=" font-bold ">{username}</div>
@@ -150,19 +165,15 @@ export default function Profile() {
 						<Table>
 							<TableRow>
 								<TableCell>Highest Score</TableCell>
-								<TableCell>50</TableCell>
+								<TableCell>{user.highestScore}</TableCell>
 							</TableRow>
 							<TableRow>
-								<TableCell>Highest Score</TableCell>
-								<TableCell>50</TableCell>
+								<TableCell>Total Score</TableCell>
+								<TableCell>{user.totalScore}</TableCell>
 							</TableRow>
 							<TableRow>
-								<TableCell>Highest Score</TableCell>
-								<TableCell>50</TableCell>
-							</TableRow>
-							<TableRow>
-								<TableCell>Highest Score</TableCell>
-								<TableCell>50</TableCell>
+								<TableCell>SPG</TableCell>
+								<TableCell>{user.SPG}</TableCell>
 							</TableRow>
 						</Table>
 					</CardContent>
@@ -231,5 +242,9 @@ export default function Profile() {
 				</CardContent>
 			</Card>
 		</div>
+	) : (
+		// display skeleton loader
+		
+
 	);
 }

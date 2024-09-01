@@ -34,11 +34,11 @@ const Signup = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
-	const signUpFormSubmit = async ({ username, password }) => {
+	const signUpFormSubmit = async ({ username, password, imageURL }) => {
 		setIsLoading(true);
 
 		try {
-			await AuthService.signup(username, password);
+			await AuthService.signup(username, password, imageURL);
 
 			// navigate to the login page
 			navigate("/login");
@@ -71,6 +71,8 @@ const Signup = () => {
 				message:
 					"Password must contain at least one uppercase letter and one special character",
 			}),
+
+		imageURL: z.string().optional(),
 	});
 
 	const signUpForm = useForm({
@@ -78,6 +80,8 @@ const Signup = () => {
 		defaultValues: {
 			username: "",
 			password: "",
+			imageURL:
+				"https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small_2x/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg",
 		},
 	});
 
@@ -135,6 +139,24 @@ const Signup = () => {
 												characters, must include one
 												uppercase and a special
 												character
+											</FormDescription>
+											<FormMessage />
+										</FormItem>
+									);
+								}}
+							/>
+							<FormField
+								control={signUpForm.control}
+								name="imageURL"
+								render={({ field }) => {
+									return (
+										<FormItem>
+											<FormLabel>Image URL</FormLabel>
+											<FormControl>
+												<Input {...field} />
+											</FormControl>
+											<FormDescription>
+												URL for your profile image
 											</FormDescription>
 											<FormMessage />
 										</FormItem>

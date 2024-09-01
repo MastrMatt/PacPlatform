@@ -6,7 +6,6 @@ import {
 	SIGNUP_URL,
 	LOGIN_URL,
 	LOGOUT_URL,
-	USERS_URL,
 	CHECK_AUTH_URL,
 } from "./APIConstants";
 
@@ -33,10 +32,11 @@ const AuthService = {
 		}
 	},
 
-	signup: async (username, password) => {
+	signup: async (username, password, imageURL) => {
 		const response = await requestClient.post(SIGNUP_URL, {
 			username,
 			password,
+			imageURL,
 		});
 
 		return response;

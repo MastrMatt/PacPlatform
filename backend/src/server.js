@@ -7,8 +7,6 @@ import { Router } from "express";
 // routers
 import { authRouter } from "./routes/auth.js";
 import { userRouter } from "./routes/user.js";
-import { friendRequestRouter } from "./routes/friendRequest.js";
-import { friendsRouter } from "./routes/friends.js";
 
 import cors from "cors";
 // import dotenv and configure it
@@ -57,8 +55,6 @@ const apiRouter = Router();
 
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/users", userRouter);
-apiRouter.use("/friendRequests", friendRequestRouter);
-apiRouter.use("/friends", friendsRouter);
 
 app.use("/api", apiRouter);
 
