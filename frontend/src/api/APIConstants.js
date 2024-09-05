@@ -9,6 +9,7 @@ const CHECK_AUTH_URL = `/auth/checkAuth`;
 
 const FRIEND_REQUESTS_URL = "/friendRequests";
 const FRIENDS_URL = "/friends";
+const LEADERBOARD_URL = "/leaderboard";
 
 const USERS_URL = "/users";
 
@@ -23,4 +24,5 @@ export {
 	CHECK_AUTH_URL,
 	FRIEND_REQUESTS_URL,
 	FRIENDS_URL,
+	LEADERBOARD_URL,
 };

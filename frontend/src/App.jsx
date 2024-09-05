@@ -12,7 +12,7 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import MainLayout from "./components/mainLayout/MainLayout";
 import GameSetup from "./components/gameSetup/GameSetup";
-import Profile from "./components/profile/Profile";
+import Profile from "./components/profile/ProfilePage";
 import FriendRequests from "./components/friendRequests/FriendRequests";
 import Search from "./components/search/SearchPeople";
 

@@ -80,7 +80,6 @@ userRouter.get("/user/:id", async (req, res) => {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		console.log("inside of get user", user);
 		res.json(serializeUser(user));
 	} catch (error) {
 		next(error);
@@ -147,6 +146,39 @@ userRouter.get("/user/:id/friends", async (req, res) => {
 		const friends = await db.lRange(friendsString, 0, -1);
 
 		return res.status(200).json({ friends });
+	} catch (error) {
+		next(error);
+	}
+});
+
+// get the leaderboard for user's friends according to some type
+userRouter.get("/user/:id/friends/leaderboard/:type", async (req, res) => {
+	try {
+		const username = req.params.id;
+		const type = req.params.type;
+
+		const friendsString = `friends:${username}`;
+		const friends = await db.lRange(friendsString, 0, -1);
+
+		const leaderboard = [];
+
+		console.log(`Type is ${type}`);
+
+		for (const friend of friends) {
+			const friendObject = await db.hGetAll(friend);
+
+			leaderboard.push({
+				username: friendObject.username,
+				highestScore: friendObject.highestScore,
+				totalScore: friendObject.totalScore,
+				// SPG: average score per game
+				SPG: friendObject.SPG,
+			});
+		}
+
+		leaderboard.sort((a, b) => b[type] - a[type]);
+
+		res.json({ leaderboard });
 	} catch (error) {
 		next(error);
 	}
