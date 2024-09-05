@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 
+import { requestClient } from "@/api/apiClient";
 import { AuthService } from "@/api/AuthService";
 
 import {
@@ -18,8 +19,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Input } from "@/components/ui/input";
+import { USERS_URL } from "@/api/APIConstants";
 
 export default function SearchPeople() {
+	const [searchResults, setSearchResults] = useState([]);
+
 	useEffect(() => {
 		try {
 			AuthService.checkAuth();
@@ -27,6 +31,29 @@ export default function SearchPeople() {
 			console.error("Check auth failed " + error.response.data);
 		}
 	}, []);
+
+	const handleSearch = async (e) => {
+		if (e.target.value === "") {
+			setSearchResults([]);
+			return;
+		}
+
+		try {
+			const response = await requestClient.get(
+				USERS_URL + "/" + e.target.value
+			);
+
+			console.log(response.data.users);
+			setSearchResults(response.data.users);
+		} catch (error) {
+			console.error("Search failed " + error.response.data);
+		}
+	};
+
+	const viewProfile = async (user) => {
+		console.log(user);
+	};
+
 	return (
 		<div className=" w-full flex items-center justify-center">
 			<Card className="m-2 w-2/3">
@@ -37,231 +64,39 @@ export default function SearchPeople() {
 							type="search"
 							placeholder="Search for People ..."
 							className="w-full rounded-lg bg-background pl-8"
-							onChange={(e) => console.log(e.target.value)}
+							onChange={handleSearch}
 						/>
 					</div>
 				</CardHeader>
 				<CardContent className="grid gap-8">
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/01.png" alt="Avatar" />
-							<AvatarFallback>OM</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Olivia Martin
-							</p>
-							<p className="text-sm text-muted-foreground">
-								olivia.martin@email.com
-							</p>
+					{searchResults.map((user) => (
+						<div
+							key={user.username}
+							className="flex items-center gap-4"
+						>
+							<Avatar className="hidden h-9 w-9 sm:flex">
+								<AvatarImage
+									src="/avatars/01.png"
+									alt="Avatar"
+								/>
+								<AvatarFallback>
+									{user.username.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+							<div className="grid gap-1">
+								<p className="text-sm font-medium leading-none">
+									{user.username}
+								</p>
+							</div>
+							<Button
+								className="ml-auto"
+								onClick={() => viewProfile(user)}
+							>
+								View
+							</Button>
+							<Button>Send Friend Request</Button>
 						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/02.png" alt="Avatar" />
-							<AvatarFallback>JL</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Jackson Lee
-							</p>
-							<p className="text-sm text-muted-foreground">
-								jackson.lee@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/03.png" alt="Avatar" />
-							<AvatarFallback>IN</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Isabella Nguyen
-							</p>
-							<p className="text-sm text-muted-foreground">
-								isabella.nguyen@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/04.png" alt="Avatar" />
-							<AvatarFallback>WK</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								William Kim
-							</p>
-							<p className="text-sm text-muted-foreground">
-								will@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
+					))}
 				</CardContent>
 			</Card>
 		</div>
