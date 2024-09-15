@@ -46,7 +46,7 @@ const serializeUser = (user) => {
 };
 
 // get all users which name starts with the given string
-userRouter.get("/:id", async (req, res, next) => {
+userRouter.get("/search/:id", async (req, res, next) => {
 	try {
 		const searchString = req.params.id;
 		const keys = await db.keys();
@@ -70,7 +70,7 @@ userRouter.get("/:id", async (req, res, next) => {
 });
 
 // get the user object from the database and serialize it before sending it to the client
-userRouter.get("/user/:id", async (req, res, next) => {
+userRouter.get("/:id", async (req, res, next) => {
 	try {
 		// if reached here, the user is authenticated by cookieJwtAuth middleware
 		// fetch the user object from the db
@@ -91,7 +91,7 @@ userRouter.get("/user/:id", async (req, res, next) => {
 });
 
 // get all friend requests for the user
-userRouter.get("/user/:id/friendRequests", async (req, res, next) => {
+userRouter.get("/:id/friendRequests", async (req, res, next) => {
 	try {
 		// if reached here, the user is authenticated by cookieJwtAuth middleware
 		// fetch the user object from the db
@@ -107,7 +107,7 @@ userRouter.get("/user/:id/friendRequests", async (req, res, next) => {
 });
 
 // add a friend request to the user's friend request list
-userRouter.post("/user/:id/friendRequests", async (req, res, next) => {
+userRouter.post("/:id/friendRequests", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const { requestUsername } = req.body;
@@ -115,6 +115,19 @@ userRouter.post("/user/:id/friendRequests", async (req, res, next) => {
 
 		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
+
+		// check if friend request has already been sent
+		const requestSent = await db.lExists(
+			`friendRequests:${username}`,
+			requestUsernameString
+		);
+
+		if (requestSent) {
+			// Return 409 Conflict status code
+			return res
+				.status(409)
+				.json({ message: "Friend request already sent" });
+		}
 
 		await db.rPush(`friendRequests:${username}`, requestUsernameString);
 
@@ -125,7 +138,7 @@ userRouter.post("/user/:id/friendRequests", async (req, res, next) => {
 });
 
 // delete a friend request from the user's friend request list
-userRouter.delete("/user/:id/friendRequests", async (req, res, next) => {
+userRouter.delete("/:id/friendRequests", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const { requestUsername } = req.body;
@@ -142,7 +155,7 @@ userRouter.delete("/user/:id/friendRequests", async (req, res, next) => {
 });
 
 // get all friends for the user
-userRouter.get("/user/:id/friends", async (req, res, next) => {
+userRouter.get("/:id/friends", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const friendsString = `friends:${username}`;
@@ -156,46 +169,43 @@ userRouter.get("/user/:id/friends", async (req, res, next) => {
 });
 
 // get the leaderboard for user's friends according to some type
-userRouter.get(
-	"/user/:id/friends/leaderboard/:type",
-	async (req, res, next) => {
-		try {
-			const username = req.params.id;
-			const type = req.params.type;
+userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
+	try {
+		const username = req.params.id;
+		const type = req.params.type;
 
-			const friendsString = `friends:${username}`;
-			const friends = await db.lRange(friendsString, 0, -1);
+		const friendsString = `friends:${username}`;
+		const friends = await db.lRange(friendsString, 0, -1);
 
-			let leaderboard = [];
+		let leaderboard = [];
 
-			console.log(`Type is ${type}`);
+		console.log(`Type is ${type}`);
 
-			for (const friend of friends) {
-				const friendObject = await db.hGetAll(friend);
+		for (const friend of friends) {
+			const friendObject = await db.hGetAll(friend);
 
-				leaderboard.push({
-					username: friendObject.username,
-					highestScore: friendObject.highestScore,
-					totalScore: friendObject.totalScore,
-					// SPG: average score per game
-					SPG: friendObject.SPG,
-				});
-			}
-
-			leaderboard.sort((a, b) => b[type] - a[type]);
-
-			// return the top 10 values
-			leaderboard = leaderboard.slice(0, 10);
-
-			res.json({ leaderboard });
-		} catch (error) {
-			next(error);
+			leaderboard.push({
+				username: friendObject.username,
+				highestScore: friendObject.highestScore,
+				totalScore: friendObject.totalScore,
+				// SPG: average score per game
+				SPG: friendObject.SPG,
+			});
 		}
+
+		leaderboard.sort((a, b) => b[type] - a[type]);
+
+		// return the top 10 values, sort in descending order
+		leaderboard = leaderboard.slice(0, 10);
+
+		res.json({ leaderboard });
+	} catch (error) {
+		next(error);
 	}
-);
+});
 
 // add a friend to the user's friend list
-userRouter.post("/user/:id/friends", async (req, res, next) => {
+userRouter.post("/:id/friends", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const { requestUsername } = req.body;
@@ -212,7 +222,7 @@ userRouter.post("/user/:id/friends", async (req, res, next) => {
 });
 
 // delete a friend from the user's friend list
-userRouter.delete("/user/:id/friends", async (req, res, next) => {
+userRouter.delete("/:id/friends", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const { requestUsername } = req.body;

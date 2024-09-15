@@ -26,10 +26,9 @@ function ProfilePage() {
 	async function retrieveUser(username) {
 		try {
 			const response = await requestClient.get(
-				USERS_URL + "/user" + "/" + username
+				USERS_URL + `/${username}`
 			);
 
-			console.log(response.data);
 			setUser(response.data);
 		} catch (error) {
 			console.error(
@@ -43,9 +42,7 @@ function ProfilePage() {
 		try {
 			const response = await requestClient.get(
 				USERS_URL +
-					"/user" +
-					"/" +
-					username +
+					`/${username}` +
 					FRIENDS_URL +
 					LEADERBOARD_URL +
 					"/" +
@@ -83,7 +80,7 @@ function ProfilePage() {
 
 	return user ? (
 		<div className="w-full h-screen flex flex-col items-center justify-evenly md:flex-row gap-10">
-			<Profile user={user} />
+			<Profile user={user} isPersonal={true} />
 			<Leaderboard />
 		</div>
 	) : (

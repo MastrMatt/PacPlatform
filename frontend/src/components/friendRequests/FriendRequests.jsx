@@ -38,6 +38,8 @@ async function makeFriendRequest(username, requestUsername) {
 }
 
 export default function FriendRequests() {
+	const friendRequests = useState([]);
+
 	useEffect(() => {
 		try {
 			AuthService.checkAuth();
