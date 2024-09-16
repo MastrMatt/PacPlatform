@@ -105,7 +105,9 @@ function Leaderboard() {
 			</CardHeader>
 
 			<CardContent className="h-full">
-				<ScrollArea className="h-4/5 w-full rounded-md border">
+				<div className="text-center ">Rankings between Friends:</div>
+
+				<ScrollArea className="h-3/5 w-full rounded-md border">
 					<Table>
 						<TableCaption>
 							A list of your recent invoices.
