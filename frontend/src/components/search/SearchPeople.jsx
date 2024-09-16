@@ -143,7 +143,7 @@ export default function SearchPeople() {
 								}
 							>
 								{sentRequests[user.username]
-									? "Previously Sent"
+									? "Sent"
 									: "Send Friend Request"}
 							</Button>
 						</div>

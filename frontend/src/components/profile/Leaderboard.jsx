@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
 	Select,
@@ -32,54 +32,28 @@ import {
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const invoices = [
-	{
-		invoice: "INV001",
-		paymentStatus: "Paid",
-		totalAmount: "$250.00",
-		paymentMethod: "Credit Card",
-	},
-	{
-		invoice: "INV002",
-		paymentStatus: "Pending",
-		totalAmount: "$150.00",
-		paymentMethod: "PayPal",
-	},
-	{
-		invoice: "INV003",
-		paymentStatus: "Unpaid",
-		totalAmount: "$350.00",
-		paymentMethod: "Bank Transfer",
-	},
-	{
-		invoice: "INV004",
-		paymentStatus: "Paid",
-		totalAmount: "$450.00",
-		paymentMethod: "Credit Card",
-	},
-	{
-		invoice: "INV005",
-		paymentStatus: "Paid",
-		totalAmount: "$550.00",
-		paymentMethod: "PayPal",
-	},
-	{
-		invoice: "INV006",
-		paymentStatus: "Pending",
-		totalAmount: "$200.00",
-		paymentMethod: "Bank Transfer",
-	},
-	{
-		invoice: "INV007",
-		paymentStatus: "Unpaid",
-		totalAmount: "$300.00",
-		paymentMethod: "Credit Card",
-	},
-];
+import { requestClient } from "@/api/apiClient";
+import { FRIENDS_URL, LEADERBOARD_URL, USERS_URL } from "@/api/APIConstants";
 
 function Leaderboard() {
+	const [leaderboard, setLeaderboard] = useState([]);
+
+	const getLeaderboard = async (type) => {
+		try {
+			const response = await requestClient.get(
+				`${USERS_URL}/${username}/${FRIENDS_URL}/${LEADERBOARD_URL}/${type}`
+			);
+
+			const data = response.data;
+
+			setLeaderboard(data);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	const handleSelectChange = (value) => {
-		console.log(value);
+		getLeaderboard(value);
 	};
 
 	return (
@@ -89,48 +63,41 @@ function Leaderboard() {
 
 				<Select onValueChange={handleSelectChange}>
 					<SelectTrigger className="w-[180px]">
-						<SelectValue placeholder="Select a fruit" />
+						<SelectValue placeholder="Select filter" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectGroup>
-							<SelectLabel>Fruits</SelectLabel>
-							<SelectItem value="apple">Apple</SelectItem>
-							<SelectItem value="banana">Banana</SelectItem>
-							<SelectItem value="blueberry">Blueberry</SelectItem>
-							<SelectItem value="grapes">Grapes</SelectItem>
-							<SelectItem value="pineapple">Pineapple</SelectItem>
+							<SelectLabel>Filter Type</SelectLabel>
+							<SelectItem value="highestScore">
+								High Score
+							</SelectItem>
+							<SelectItem value="totalScore">
+								Total Score
+							</SelectItem>
+							<SelectItem value="SPG">SPG</SelectItem>
 						</SelectGroup>
 					</SelectContent>
 				</Select>
 			</CardHeader>
 
 			<CardContent className="h-full">
-				<div className="text-center ">Rankings between Friends:</div>
+				<div className="text-center ">Top 10 between Friends:</div>
 
 				<ScrollArea className="h-3/5 w-full rounded-md border">
 					<Table>
-						<TableCaption>
-							A list of your recent invoices.
-						</TableCaption>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Invoice</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Method</TableHead>
+								<TableHead>Username </TableHead>
+								<TableHead>Value</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{invoices.map((invoice) => (
-								<TableRow key={invoice.invoice}>
+							{leaderboard.map((user) => (
+								<TableRow key={user.username}>
 									<TableCell className="font-medium">
-										{invoice.invoice}
+										{user.username}
 									</TableCell>
-									<TableCell>
-										{invoice.paymentStatus}
-									</TableCell>
-									<TableCell>
-										{invoice.paymentMethod}
-									</TableCell>
+									<TableCell>{user.value}</TableCell>
 								</TableRow>
 							))}
 						</TableBody>

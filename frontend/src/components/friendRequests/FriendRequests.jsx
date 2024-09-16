@@ -14,13 +14,17 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 
-
 import { Check } from "lucide-react";
 import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+	FRIEND_REQUESTS_URL,
+	FRIENDS_URL,
+	USERS_URL,
+} from "@/api/APIConstants";
 
 // function to make a friend request
 async function makeFriendRequest(username, requestUsername) {
@@ -39,15 +43,60 @@ async function makeFriendRequest(username, requestUsername) {
 }
 
 export default function FriendRequests() {
-	const friendRequests = useState([]);
+	const [friendRequests, setFriendRequests] = useState([]);
+	const [username, setUsername] = useState(() =>
+		localStorage.getItem("username")
+	);
+
+	const getFriendRequests = async () => {
+		try {
+			const response = await requestClient.get(
+				`${USERS_URL}/${username}${FRIEND_REQUESTS_URL}`
+			);
+
+			setFriendRequests(response.data.friendRequests);
+		} catch (error) {
+			console.error("Get friend requests failed " + error);
+		}
+	};
 
 	useEffect(() => {
 		try {
 			AuthService.checkAuth();
+			getFriendRequests();
 		} catch (error) {
 			console.error("Check auth failed " + error);
 		}
-	}, []);
+	}, [username]);
+
+	const acceptFriendRequest = (requestUsername) => async () => {
+		try {
+			await requestClient.post(`${USERS_URL}/${username}${FRIENDS_URL}`, {
+				requestUsername,
+			});
+
+			// refresh friend requests
+			getFriendRequests();
+		} catch (error) {
+			console.error("Accept friend request failed " + error);
+		}
+	};
+
+	const rejectFriendRequest = (requestUsername) => async () => {
+		try {
+			await requestClient.delete(
+				`${USERS_URL}/${username}${FRIEND_REQUESTS_URL}`,
+				{
+					requestUsername,
+				}
+			);
+
+			// refresh friend requests
+			getFriendRequests();
+		} catch (error) {
+			console.error("Reject friend request failed " + error);
+		}
+	};
 
 	return (
 		<div className=" w-full flex items-center justify-center">
@@ -58,146 +107,37 @@ export default function FriendRequests() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-8">
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/01.png" alt="Avatar" />
-							<AvatarFallback>OM</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Olivia Martin
-							</p>
-							<p className="text-sm text-muted-foreground">
-								olivia.martin@email.com
-							</p>
+					{friendRequests.map((requestUsername) => (
+						<div className="flex items-center gap-4">
+							<Avatar className="hidden h-9 w-9 sm:flex">
+								<AvatarImage
+									src={requestUsername.imageURL}
+									alt="Avatar"
+								/>
+								<AvatarFallback>
+									{requestUsername.username.charAt(0)}
+								</AvatarFallback>
+							</Avatar>
+							<div className="grid gap-1">
+								<p className="text-sm font-medium leading-none">
+									{requestUsername.username}
+								</p>
+							</div>
+							<Button
+								variant="ghost"
+								className="ml-auto"
+								onClick={acceptFriendRequest(requestUsername)}
+							>
+								<Check color="green" />
+							</Button>
+							<Button
+								variant="ghost"
+								onClick={rejectFriendRequest(requestUsername)}
+							>
+								<X color="red" />
+							</Button>
 						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/02.png" alt="Avatar" />
-							<AvatarFallback>JL</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Jackson Lee
-							</p>
-							<p className="text-sm text-muted-foreground">
-								jackson.lee@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/03.png" alt="Avatar" />
-							<AvatarFallback>IN</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Isabella Nguyen
-							</p>
-							<p className="text-sm text-muted-foreground">
-								isabella.nguyen@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/04.png" alt="Avatar" />
-							<AvatarFallback>WK</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								William Kim
-							</p>
-							<p className="text-sm text-muted-foreground">
-								will@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
-					<div className="flex items-center gap-4">
-						<Avatar className="hidden h-9 w-9 sm:flex">
-							<AvatarImage src="/avatars/05.png" alt="Avatar" />
-							<AvatarFallback>SD</AvatarFallback>
-						</Avatar>
-						<div className="grid gap-1">
-							<p className="text-sm font-medium leading-none">
-								Sofia Davis
-							</p>
-							<p className="text-sm text-muted-foreground">
-								sofia.davis@email.com
-							</p>
-						</div>
-						<Button variant="ghost" className="ml-auto">
-							<Check color="green" />
-						</Button>
-						<Button variant="ghost">
-							<X color="red" />
-						</Button>
-					</div>
+					))}
 				</CardContent>
 			</Card>
 		</div>

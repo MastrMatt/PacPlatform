@@ -93,14 +93,21 @@ userRouter.get("/:id", async (req, res, next) => {
 // get all friend requests for the user
 userRouter.get("/:id/friendRequests", async (req, res, next) => {
 	try {
-		// if reached here, the user is authenticated by cookieJwtAuth middleware
-		// fetch the user object from the db
 		const username = req.params.id;
 		const friendRequestsString = `friendRequests:${username}`;
 
 		const friendRequests = await db.lRange(friendRequestsString, 0, -1);
 
-		return res.status(200).json({ friendRequests });
+		// Fetch user objects for each friend request
+		const friendRequestUsers = await Promise.all(
+			friendRequests.map(async (requestUsername) => {
+				const userString = requestUsername.replace("users:", "");
+				const user = await db.hGetAll(`users:${userString}`);
+				return serializeUser(user);
+			})
+		);
+
+		return res.status(200).json({ friendRequests: friendRequestUsers });
 	} catch (error) {
 		next(error);
 	}
@@ -154,20 +161,6 @@ userRouter.delete("/:id/friendRequests", async (req, res, next) => {
 	}
 });
 
-// get all friends for the user
-userRouter.get("/:id/friends", async (req, res, next) => {
-	try {
-		const username = req.params.id;
-		const friendsString = `friends:${username}`;
-
-		const friends = await db.lRange(friendsString, 0, -1);
-
-		return res.status(200).json({ friends });
-	} catch (error) {
-		next(error);
-	}
-});
-
 // get the leaderboard for user's friends according to some type
 userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 	try {
@@ -186,14 +179,11 @@ userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 
 			leaderboard.push({
 				username: friendObject.username,
-				highestScore: friendObject.highestScore,
-				totalScore: friendObject.totalScore,
-				// SPG: average score per game
-				SPG: friendObject.SPG,
+				value: friendObject[type],
 			});
 		}
 
-		leaderboard.sort((a, b) => b[type] - a[type]);
+		leaderboard.sort((a, b) => b[value] - a[value]);
 
 		// return the top 10 values, sort in descending order
 		leaderboard = leaderboard.slice(0, 10);
@@ -204,7 +194,21 @@ userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 	}
 });
 
-// add a friend to the user's friend list
+// get all friends for the user
+userRouter.get("/:id/friends", async (req, res, next) => {
+	try {
+		const username = req.params.id;
+		const friendsString = `friends:${username}`;
+
+		const friends = await db.lRange(friendsString, 0, -1);
+
+		return res.status(200).json({ friends });
+	} catch (error) {
+		next(error);
+	}
+});
+
+// add a friend to the user's friend list while removing the friend request
 userRouter.post("/:id/friends", async (req, res, next) => {
 	try {
 		const username = req.params.id;
@@ -214,6 +218,9 @@ userRouter.post("/:id/friends", async (req, res, next) => {
 		const requestUsernameString = `users:${requestUsername}`;
 
 		await db.rPush(`friends:${userString}`, requestUsernameString);
+
+		// remove the friend request
+		await db.lRem(`friendRequests:${userString}`, 0, requestUsernameString);
 
 		res.json({ message: "Friend added" });
 	} catch (error) {
