@@ -1,32 +1,24 @@
 import React from "react";
 import { useState, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
-
 import { useNavigate } from "react-router-dom";
-
 import { ChevronRight, LoaderCircle } from "lucide-react";
 import animationGif from "../../assets/animations.gif";
 import ghostImage from "../../assets/ghost.png";
-
-import { BACKEND_URL } from "@/api/APIConstants";
 import * as Constants from "./Constants";
-
 import { Button } from "../ui/button";
 
-function Game({ setStartGame, gameType, roomID, numPlayers }) {
+function Game({ socket, setStartGame, gameType, roomID, numPlayers }) {
 	const navigate = useNavigate();
 
 	const [loadingGame, setLoadingGame] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
 
-	const [socket, setSocket] = useState(() => io(BACKEND_URL));
-	const clientID = useRef("clientID" + Date.now());
+	const clientID = useRef(localStorage.getItem("username"));
 
 	const canvasRef = useRef(null);
 	const pacmanFramesRef = useRef(null);
 	const ghostFramesRef = useRef(null);
 
-	// ! Add a back button for when the game is over
 	useEffect(() => {
 		const wallColor = Constants.wallColor;
 		const oneBlockSize = Constants.oneBlockSize;
@@ -53,7 +45,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 		}
 
 		socket.on("allPlayersJoined", (message) => {
-			// start the game
 			setLoadingGame(false);
 		});
 
@@ -68,11 +59,9 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 		});
 
 		socket.on("gameOver", ({ status, elimPacmen }) => {
-			// disconnect the socket
 			socket.disconnect();
-			setSocket(null);
+			socket = null;
 			setGameOver(true);
-
 			drawOver(status, elimPacmen);
 		});
 
@@ -85,20 +74,16 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			let canvas = canvasRef.current;
 			let ctx = canvas.getContext("2d");
 
-			// black out the canvas
 			createRect(ctx, 0, 0, canvas.width, canvas.height, "black");
 
-			// draw the title
 			ctx.font = "12px PacFont";
 			ctx.fillStyle = "white";
 			ctx.fillText(`Pacmen ${status}!`, 140, 120);
 
-			// sort the pacmen by score
 			elimPacmen = Object.entries(elimPacmen).sort(
 				(a, b) => b[1].score - a[1].score
 			);
 
-			// draw all the playerID's and thier scores, like a leader board
 			let y = 240;
 			for (let i of elimPacmen) {
 				ctx.fillText(`${i[0]} scored: ${i[1].score}`, 20, y);
@@ -106,11 +91,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			}
 		};
 
-		/**
-		 * Wherever there is a 1 in the map, draws a wall on the canvas
-		 *
-		 * @param {Array<String>} map - a 2D array of strings
-		 */
 		const drawWalls = (ctx, map) => {
 			for (let i = 0; i < map.length; i++) {
 				for (let j = 0; j < map[0].length; j++) {
@@ -124,7 +104,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 							wallColor
 						);
 
-						// account for wall on left
 						if (j > 0 && map[i][j - 1] == 1) {
 							createRect(
 								ctx,
@@ -136,7 +115,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 							);
 						}
 
-						// account for wall on right
 						if (j < map[0].length - 1 && map[i][j + 1] == 1) {
 							createRect(
 								ctx,
@@ -148,7 +126,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 							);
 						}
 
-						// account for wall on top
 						if (i > 0 && map[i - 1][j] == 1) {
 							createRect(
 								ctx,
@@ -160,7 +137,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 							);
 						}
 
-						// account for wall on bottom
 						if (i < map.length - 1 && map[i + 1][j] == 1) {
 							createRect(
 								ctx,
@@ -176,11 +152,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			}
 		};
 
-		/**
-		 * Wherever there is a 2 in the map, draws a food on the canvas
-		 * @param {*} ctx - canvas context
-		 * @param {Array<String>} map - a 2D array of strings
-		 */
 		const drawFoods = (ctx, map) => {
 			for (let i = 0; i < map.length; i++) {
 				for (let j = 0; j < map[0].length; j++) {
@@ -198,11 +169,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			}
 		};
 
-		/**
-		 * Draws the score of the pacman on the canvas
-		 * @param {*} ctx - canvas context
-		 * @param {Pacman} pacman - the pacman object
-		 */
 		const drawScore = (ctx, pacman, map) => {
 			ctx.font = "18px PacFont";
 			ctx.fillStyle = "white";
@@ -229,23 +195,12 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			ctx.restore();
 		};
 
-		/**
-		 * Draws the ghosts on the canvas
-		 *
-		 * @param  {Array<Ghost>} ghosts - an array of ghosts
-		 */
 		const drawGhosts = (ctx, ghostFrames, ghosts) => {
 			for (let i = 0; i < ghosts.length; i++) {
 				drawGhost(ctx, ghostFrames, ghosts[i]);
 			}
 		};
 
-		/**
-		 * Draws the lives of the pacman on the canvas
-		 *
-		 * @param {*} ctx - canvas context
-		 * @param {Pacman} pacman - the pacman object
-		 */
 		const drawLives = (ctx, pacman, map, pacmanFrames) => {
 			let lives = pacman.lives;
 
@@ -269,23 +224,16 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 		};
 
 		const drawPacman = (ctx, pacmanFrames, pacman) => {
-			// save the canvas context, useful to restore the canvas context later
 			ctx.save();
-
-			// translate the canvas context to the center of the pacman
 			ctx.translate(
 				pacman.x + pacman.width / 2,
 				pacman.y + pacman.height / 2
 			);
-
-			// convert the angle to radians first
 			ctx.rotate((pacman.direction * 90 * Math.PI) / 180);
-			// translate the canvas context back to the top left corner of the pacman
 			ctx.translate(
 				-pacman.x - pacman.width / 2,
 				-pacman.y - pacman.height / 2
 			);
-			// draw the pacman
 			ctx.drawImage(
 				pacmanFrames,
 				(pacman.currentFrame - 1) * pacman.width,
@@ -297,19 +245,11 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 				pacman.width,
 				pacman.height
 			);
-			// restore the canvas context
 			ctx.restore();
 		};
 
-		/**
-		 *
-		 * @param {*} ctx - canvas context
-		 * @param {*} pacmanFrames - the image of the pacman
-		 * @param {Array<Pacman>} pacmen - an object containing all the pacmen
-		 */
 		const drawPacmen = (ctx, pacmanFrames, pacmen) => {
 			for (let clientID in pacmen) {
-				// turn the generic object from socket.io into a Pacman object
 				drawPacman(ctx, pacmanFrames, pacmen[clientID]);
 			}
 		};
@@ -323,12 +263,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			ctx.fillText("You are out :(", 75, oneBlockSize * (map.length + 1));
 		};
 
-		/**
-		 * Draws the game on the canvas
-		 * @param {*} gameState - the game state object
-		 * @param {Array<Pacman>} gameState.pacmen - an object
-		 *
-		 */
 		const draw = (gameState) => {
 			let pacmen = gameState.pacmen;
 			let myPacman = pacmen[clientID.current];
@@ -341,7 +275,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			let pacmanFrames = pacmanFramesRef.current;
 			let ghostFrames = ghostFramesRef.current;
 
-			// clear the canvas with black color
 			createRect(ctx, 0, 0, canvas.width, canvas.height, "black");
 
 			drawWalls(ctx, map);
@@ -349,7 +282,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			drawPacmen(ctx, pacmanFrames, pacmen);
 			drawGhosts(ctx, ghostFrames, ghosts);
 
-			// draw the score and lives if the pacman object has NOT been eliminated
 			if (myPacman) {
 				drawScore(ctx, myPacman, map);
 				drawLives(ctx, myPacman, map, pacmanFrames);
@@ -373,7 +305,6 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			}
 
 			if (direction) {
-				// send the key to the server
 				socket.emit("keyDown", {
 					roomID: roomID,
 					clientID: clientID.current,
@@ -382,12 +313,9 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 			}
 		};
 
-		// add an event listener to the window to listen for keydown events
 		window.addEventListener("keydown", handleKeyDown);
 
-		// Cleanup function to remove socket event listeners and window event listeners for cleanup, happens when the component unmounts
 		return () => {
-			// remove event listerners here
 			socket?.off("allPlayersJoined");
 			socket?.off("gameUpdate");
 			socket?.off("gameOver");
@@ -421,7 +349,7 @@ function Game({ setStartGame, gameType, roomID, numPlayers }) {
 					variant="secondary "
 					className="bg-navBar hover:bg-navBarHover flex items-center justify-center "
 					onClick={() => {
-						setStartGame(false);
+						navigate("/home");
 					}}
 				>
 					<ChevronRight className="text-primary" />{" "}

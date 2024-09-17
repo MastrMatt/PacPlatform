@@ -27,9 +27,16 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { BACKEND_URL } from "@/api/APIConstants";
+import { io } from "socket.io-client";
+
 import Game from "../game/Game";
+import { Loader2 } from "lucide-react";
 
 function GameSetup() {
+	const [socket, setSocket] = useState(() => io(BACKEND_URL));
+	const [isLoading, setIsLoading] = useState(false);
+
 	useEffect(() => {
 		try {
 			AuthService.checkAuth();
@@ -44,15 +51,46 @@ function GameSetup() {
 
 	const [startGame, setStartGame] = useState(false);
 
-	const roomIDAvailable = async (roomID) => {
-		// TODO: Check if roomID is available
-		return true;
+	const roomIDAvailable = (roomID) => {
+		return new Promise((resolve, reject) => {
+			// Listen for the server's response
+			socket.once("roomIDAvailabilityResponse", (isAvailable) => {
+				if (isAvailable) {
+					resolve(true);
+				} else {
+					resolve(false);
+				}
+			});
+
+			// Emit the event to check room ID availability
+			socket.emit("checkRoomID", roomID);
+
+			// Set a timeout for the server to respond
+			setTimeout(() => {
+				reject(new Error("Server did not respond in time"));
+			}, 5000); // 5 second timeout
+		});
 	};
 
 	const roomIDCreated = async (roomID) => {
-		// TODO: Check if roomID has already been created
+		return new Promise((resolve, reject) => {
+			// Listen for the server's response
+			socket.once("roomIDCreatedResponse", (isCreated) => {
+				if (isCreated) {
+					resolve(true);
+				} else {
+					resolve(false);
+				}
+			});
 
-		return true;
+			// Emit the event to check room ID availability
+			socket.emit("checkCreatedRoomID", roomID);
+
+			// Set a timeout for the server to respond
+			setTimeout(() => {
+				reject(new Error("Server did not respond in time"));
+			}, 5000); // 5 second timeout
+		});
 	};
 
 	// 1. Define form schema
@@ -62,10 +100,23 @@ function GameSetup() {
 			.min(1, {
 				message: "Room ID must be at least 1 character",
 			})
-			.refine(roomIDAvailable, {
-				// specify a room ID error occured
-				message: "Room ID is not available",
-			}),
+			.refine(
+				async (roomID) => {
+					try {
+						return await roomIDAvailable(roomID);
+					} catch (error) {
+						// Handle any errors (e.g., timeout)
+						console.error(
+							"Error checking room availability:",
+							error
+						);
+						return false;
+					}
+				},
+				{
+					message: "Room ID is not available",
+				}
+			),
 		numPlayers: z.coerce
 			.number({
 				message: "Number of players must be a number",
@@ -84,10 +135,23 @@ function GameSetup() {
 			.min(1, {
 				message: "Room ID must be at least 1 character",
 			})
-			.refine(roomIDCreated, {
-				// specify a room ID error occured
-				message: "Room ID does not exist",
-			}),
+			.refine(
+				async (roomID) => {
+					try {
+						return await roomIDCreated(roomID);
+					} catch (error) {
+						// Handle any errors (e.g., timeout)
+						console.error(
+							"Error checking room availability:",
+							error
+						);
+						return false;
+					}
+				},
+				{
+					message: "Room ID has not been created",
+				}
+			),
 	});
 
 	// 2. instantiate the form using the schema, default values are a must
@@ -108,6 +172,7 @@ function GameSetup() {
 
 	// 3. need a submit handler if validation passes
 	const createFormSubmit = (values) => {
+		setIsLoading(true);
 		setRoomID(values.roomID);
 		setNumPlayers(values.numPlayers);
 		setGameType("create");
@@ -115,6 +180,7 @@ function GameSetup() {
 	};
 
 	const joinFormSubmit = (values) => {
+		setIsLoading(true);
 		setRoomID(values.roomID);
 		setGameType("join");
 		setStartGame(true);
@@ -122,6 +188,7 @@ function GameSetup() {
 
 	return startGame ? (
 		<Game
+			socket={socket}
 			setStartGame={setStartGame}
 			gameType={gameType}
 			roomID={roomID}
@@ -180,7 +247,15 @@ function GameSetup() {
 								}}
 							/>
 
-							<Button type="submit">Create</Button>
+							<Button type="submit">
+								{isLoading ? (
+									<Loader2 className="w-10 h-10 animate-spin">
+										{" "}
+									</Loader2>
+								) : (
+									"Create"
+								)}
+							</Button>
 						</form>
 					</Form>
 				</CardContent>
@@ -218,7 +293,15 @@ function GameSetup() {
 									);
 								}}
 							/>
-							<Button type="submit">Join</Button>
+							<Button type="submit">
+								{isLoading ? (
+									<Loader2 className="w-10 h-10 animate-spin">
+										{" "}
+									</Loader2>
+								) : (
+									"Join"
+								)}
+							</Button>
 						</form>
 					</Form>
 				</CardContent>

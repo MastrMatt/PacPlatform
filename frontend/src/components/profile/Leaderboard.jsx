@@ -36,17 +36,21 @@ import { requestClient } from "@/api/apiClient";
 import { FRIENDS_URL, LEADERBOARD_URL, USERS_URL } from "@/api/APIConstants";
 
 function Leaderboard() {
+	const [username, setUsername] = useState(() =>
+		localStorage.getItem("username")
+	);
+
 	const [leaderboard, setLeaderboard] = useState([]);
 
 	const getLeaderboard = async (type) => {
 		try {
 			const response = await requestClient.get(
-				`${USERS_URL}/${username}/${FRIENDS_URL}/${LEADERBOARD_URL}/${type}`
+				`${USERS_URL}/${username}${FRIENDS_URL}${LEADERBOARD_URL}/${type}`
 			);
 
 			const data = response.data;
 
-			setLeaderboard(data);
+			setLeaderboard(data.leaderboard);
 		} catch (error) {
 			console.error(error);
 		}

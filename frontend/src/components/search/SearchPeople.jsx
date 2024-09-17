@@ -135,7 +135,11 @@ export default function SearchPeople() {
 							</Button>
 							<Button
 								onClick={() => sendFriendRequest(user)}
-								disabled={sentRequests[user.username]}
+								disabled={
+									sentRequests[user.username] ||
+									user.username ===
+										localStorage.getItem("username")
+								}
 								className={
 									sentRequests[user.username]
 										? "bg-green-500 hover:bg-green-600"

@@ -8,6 +8,8 @@ import { Router } from "express";
 import { authRouter } from "./routes/auth.js";
 import { userRouter } from "./routes/user.js";
 
+import { db } from "./db.js";
+
 import cors from "cors";
 // import dotenv and configure it
 import { configDotenv } from "dotenv";
@@ -97,9 +99,26 @@ const gameStateInit = (players) => {
 const gameRooms = {};
 // socket is the connection to the client
 io.on("connection", (socket) => {
-	socket.on("createRoom", ({ clientID, roomID, numPlayers }) => {
-		//  if room is already created, return
+	socket.on("checkRoomID", (roomID) => {
 		if (gameRooms[roomID]) {
+			socket.emit("roomIDAvailabilityResponse", false);
+		} else {
+			socket.emit("roomIDAvailabilityResponse", true);
+		}
+	});
+
+	socket.on("checkCreatedRoomID", (roomID) => {
+		if (gameRooms[roomID]) {
+			socket.emit("roomIDCreatedResponse", true);
+		} else {
+			socket.emit("roomIDCreatedResponse", false);
+		}
+	});
+
+	socket.on("createRoom", ({ clientID, roomID, numPlayers }) => {
+		//  if room is already created, emit this to the client
+		if (gameRooms[roomID]) {
+			socket.emit("roomExists", "Room already exists");
 			return;
 		}
 
@@ -240,16 +259,50 @@ let handlePacElim = (roomID, clientID) => {
 	io.to(roomID).emit("pacmanElim", clientID);
 };
 
-let handleGameOver = (roomID, gameState) => {
+let serverHandleGameOver = async (roomID, gameState) => {
 	// delete the room from the gameRooms object
 	delete gameRooms[roomID];
 
-	console.log(map);
-	console.log(gameRooms);
-
-	// ! perforn any backend logic here related to game over, like updating the database for the scores
+	// ! perform any backend logic here related to game over, like updating the database for the scores
 	// ! NOTE: you have acess to the gameState object here
-	// ! Remember to also handle auth of game creation and joining and user auth when db client is done
+
+	// go through all the dead pacmen and update the (SPG, highestScore, totalScore)
+	for (let clientID in gameState.elimPacmen) {
+		let pac = gameState.elimPacmen[clientID];
+		let userString = `users:${clientID}`;
+
+		let user = await db.hGetAll(userString);
+
+		// update the user object
+		user.totalScore += pac.score;
+		user.SPG = user.totalScore / user.numGames;
+		if (pac.score > user.highestScore) {
+			user.highestScore = pac.score;
+		}
+
+		// update the user object in the database
+		await db.hSetObject(userString, user);
+	}
+
+	//go through all the alive pacmen and update the (SPG, highestScore, totalScore)
+	for (let clientID in gameState.pacmen) {
+		let pac = gameState.pacmen[clientID];
+		let userString = `users:${clientID}`;
+
+		let user = await db.hGetAll(userString);
+
+		// update the user object
+		user.totalScore += pac.score;
+		user.SPG = user.totalScore / user.numGames;
+		if (pac.score > user.highestScore) {
+			user.highestScore = pac.score;
+		}
+
+		// update the user object in the database
+		await db.hSetObject(userString, user);
+	}
+
+	console.log(gameState);
 };
 
 let update = (roomID, gameState) => {
@@ -306,7 +359,7 @@ let update = (roomID, gameState) => {
 	}
 
 	if (pacmenCount == 0 || foodCount == 0) {
-		handleGameOver(roomID, gameState);
+		serverHandleGameOver(roomID, gameState);
 	}
 };
 

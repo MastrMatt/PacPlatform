@@ -48,8 +48,6 @@ function ProfilePage() {
 					"/" +
 					type // type is either "totalScore" or "highestScore" or "SPG"
 			);
-
-			console.log(response.data);
 		} catch (error) {
 			console.error(
 				"Get leaderboard failed for profile page " + error.response.data

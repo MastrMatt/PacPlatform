@@ -24,6 +24,7 @@ const storeUser = async (username, password, imageURL) => {
 		totalScore: 0,
 		// SPG: average score per game
 		SPG: 0,
+		numGames: 0,
 	};
 
 	db.hSetObject(userString, user);
@@ -60,8 +61,6 @@ userRouter.get("/search/:id", async (req, res, next) => {
 		const filteredUsers = users.filter((user) =>
 			user.username.startsWith(searchString)
 		);
-
-		console.log(filteredUsers.map(serializeUser));
 
 		res.json({ users: filteredUsers.map(serializeUser) });
 	} catch (error) {
@@ -118,7 +117,6 @@ userRouter.post("/:id/friendRequests", async (req, res, next) => {
 	try {
 		const username = req.params.id;
 		const { requestUsername } = req.body;
-		console.log(username, requestUsername);
 
 		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
@@ -145,15 +143,14 @@ userRouter.post("/:id/friendRequests", async (req, res, next) => {
 });
 
 // delete a friend request from the user's friend request list
-userRouter.delete("/:id/friendRequests", async (req, res, next) => {
+userRouter.delete("/:id/friendRequests/:requestId", async (req, res, next) => {
 	try {
 		const username = req.params.id;
-		const { requestUsername } = req.body;
+		const requestUsername = req.params.requestId;
 
-		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
 
-		await db.lRem(`friendRequests:${userString}`, 0, requestUsernameString);
+		await db.lRem(`friendRequests:${username}`, 0, requestUsernameString);
 
 		res.json({ message: "Friend request deleted" });
 	} catch (error) {
@@ -172,18 +169,23 @@ userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 
 		let leaderboard = [];
 
-		console.log(`Type is ${type}`);
-
 		for (const friend of friends) {
 			const friendObject = await db.hGetAll(friend);
 
 			leaderboard.push({
 				username: friendObject.username,
-				value: friendObject[type],
+				value: parseInt(friendObject[type]) || 0,
 			});
 		}
 
-		leaderboard.sort((a, b) => b[value] - a[value]);
+		// Add the current user to the leaderboard
+		const currentUser = await db.hGetAll(`users:${username}`);
+		leaderboard.push({
+			username: currentUser.username,
+			value: parseInt(currentUser[type]) || 0,
+		});
+
+		leaderboard.sort((a, b) => b.value - a.value);
 
 		// return the top 10 values, sort in descending order
 		leaderboard = leaderboard.slice(0, 10);
@@ -202,7 +204,7 @@ userRouter.get("/:id/friends", async (req, res, next) => {
 
 		const friends = await db.lRange(friendsString, 0, -1);
 
-		return res.status(200).json({ friends });
+		return res.json({ friends });
 	} catch (error) {
 		next(error);
 	}
@@ -214,13 +216,12 @@ userRouter.post("/:id/friends", async (req, res, next) => {
 		const username = req.params.id;
 		const { requestUsername } = req.body;
 
-		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
 
-		await db.rPush(`friends:${userString}`, requestUsernameString);
+		await db.rPush(`friends:${username}`, requestUsernameString);
 
 		// remove the friend request
-		await db.lRem(`friendRequests:${userString}`, 0, requestUsernameString);
+		await db.lRem(`friendRequests:${username}`, 0, requestUsernameString);
 
 		res.json({ message: "Friend added" });
 	} catch (error) {
@@ -229,19 +230,14 @@ userRouter.post("/:id/friends", async (req, res, next) => {
 });
 
 // delete a friend from the user's friend list
-userRouter.delete("/:id/friends", async (req, res, next) => {
+userRouter.delete("/:id/friends/:requestId", async (req, res, next) => {
 	try {
 		const username = req.params.id;
-		const { requestUsername } = req.body;
+		const requestUsername = req.params.requestId;
 
-		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
 
-		const ret = await db.lRem(
-			`friends:${userString}`,
-			0,
-			requestUsernameString
-		);
+		await db.lRem(`friends:${username}`, 0, requestUsernameString);
 
 		res.json({ message: "Friend deleted" });
 	} catch (error) {
