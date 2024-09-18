@@ -121,17 +121,22 @@ userRouter.post("/:id/friendRequests", async (req, res, next) => {
 		const userString = `users:${username}`;
 		const requestUsernameString = `users:${requestUsername}`;
 
-		// check if friend request has already been sent
+		// check if friend request has already been sent or already friends
 		const requestSent = await db.lExists(
 			`friendRequests:${username}`,
 			requestUsernameString
 		);
 
-		if (requestSent) {
+		const friends = await db.lExists(
+			`friends:${username}`,
+			requestUsernameString
+		);
+
+		if (requestSent || friends) {
 			// Return 409 Conflict status code
-			return res
-				.status(409)
-				.json({ message: "Friend request already sent" });
+			return res.status(409).json({
+				message: "Friend request already sent or already friends",
+			});
 		}
 
 		await db.rPush(`friendRequests:${username}`, requestUsernameString);
@@ -182,7 +187,7 @@ userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 		const currentUser = await db.hGetAll(`users:${username}`);
 		leaderboard.push({
 			username: currentUser.username,
-			value: parseInt(currentUser[type]) || 0,
+			value: parseFloat(currentUser[type]) || 0,
 		});
 
 		leaderboard.sort((a, b) => b.value - a.value);
@@ -218,7 +223,11 @@ userRouter.post("/:id/friends", async (req, res, next) => {
 
 		const requestUsernameString = `users:${requestUsername}`;
 
+		// add the friend to the user's friend list
 		await db.rPush(`friends:${username}`, requestUsernameString);
+
+		// add the user to the friend's friend list
+		await db.rPush(`friends:${requestUsername}`, `users:${username}`);
 
 		// remove the friend request
 		await db.lRem(`friendRequests:${username}`, 0, requestUsernameString);

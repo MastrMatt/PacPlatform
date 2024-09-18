@@ -85,7 +85,7 @@ export default function SearchPeople() {
 		} catch (error) {
 			if (error.response && error.response.status === 409) {
 				// Handle the case where users are already friends
-				console.log("Friend request already sent");
+				console.log(error.response.data);
 				setSentRequests((prev) => ({ ...prev, [user.username]: true }));
 			} else {
 				console.error("Friend request failed " + error.response.data);

@@ -273,10 +273,18 @@ let serverHandleGameOver = async (roomID, gameState) => {
 
 		let user = await db.hGetAll(userString);
 
+		let userTotalScore = parseInt(user.totalScore);
+		let userHighestScore = parseInt(user.highestScore);
+		let userNumGames = parseInt(user.numGames);
+
 		// update the user object
-		user.totalScore += pac.score;
-		user.SPG = user.totalScore / user.numGames;
-		if (pac.score > user.highestScore) {
+		userNumGames++;
+		user.numGames = userNumGames;
+
+		user.totalScore = userTotalScore + pac.score;
+
+		user.SPG = user.totalScore / userNumGames;
+		if (pac.score > userHighestScore) {
 			user.highestScore = pac.score;
 		}
 
