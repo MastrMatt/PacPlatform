@@ -73,9 +73,9 @@ httpServer.listen(PORT, () => {
 });
 
 /**
- * This function initializes the game state for a number of players
- * @param {Array<string>} players - an array of player IDs
- * @returns {Object} the game state
+ * Initializes the game state for a given number of players.
+ * @param {string[]} players - An array of player IDs.
+ * @returns {Object} The initial game state.
  */
 const gameStateInit = (players) => {
 	let pacmen = create4Pacmen();
@@ -199,6 +199,10 @@ io.on("connection", (socket) => {
 	});
 });
 
+/**
+ * Handles the server-side game loop for all active game rooms.
+ * Updates game state and emits updates to clients.
+ */
 let serverGameLoop = () => {
 	// loop through all rooms and check if all players have joined
 	for (let roomID in gameRooms) {
@@ -231,6 +235,10 @@ let serverGameLoop = () => {
 
 // ghosts: [{x: number, y: number}, ...]
 
+/**
+ * Resets a Pacman's position and reduces its lives.
+ * @param {Object} pacman - The Pacman object to reset.
+ */
 let resetPacman = (pacman) => {
 	pacman.reduceLives(1);
 
@@ -238,6 +246,10 @@ let resetPacman = (pacman) => {
 	pacman.y = pacman.startY;
 };
 
+/**
+ * Resets all ghosts to their starting positions.
+ * @param {Object[]} ghosts - An array of ghost objects.
+ */
 let resetGhosts = (ghosts) => {
 	for (let i = 0; i < ghosts.length; i++) {
 		ghosts[i].x = ghosts[i].startX;
@@ -245,11 +257,21 @@ let resetGhosts = (ghosts) => {
 	}
 };
 
+/**
+ * Handles collision between a Pacman and ghosts.
+ * @param {Object} pacman - The Pacman object.
+ * @param {Object[]} ghosts - An array of ghost objects.
+ */
 let onGhostCollision = (pacman, ghosts) => {
 	resetPacman(pacman);
 	resetGhosts(ghosts);
 };
 
+/**
+ * Handles the elimination of a Pacman from the game.
+ * @param {string} roomID - The ID of the game room.
+ * @param {string} clientID - The ID of the client (Pacman) to eliminate.
+ */
 let handlePacElim = (roomID, clientID) => {
 	// remove the player from the game state and add to elimPacmen, delete operator removes a key-value pair from an object
 	gameRooms[roomID].gameState.elimPacmen[clientID] =
@@ -259,6 +281,11 @@ let handlePacElim = (roomID, clientID) => {
 	io.to(roomID).emit("pacmanElim", clientID);
 };
 
+/**
+ * Handles game over logic, including updating player stats in the database.
+ * @param {string} roomID - The ID of the game room.
+ * @param {Object} gameState - The current game state.
+ */
 let serverHandleGameOver = async (roomID, gameState) => {
 	// delete the room from the gameRooms object
 	delete gameRooms[roomID];
@@ -313,6 +340,11 @@ let serverHandleGameOver = async (roomID, gameState) => {
 	console.log(gameState);
 };
 
+/**
+ * Updates the game state for a specific room.
+ * @param {string} roomID - The ID of the game room.
+ * @param {Object} gameState - The current game state.
+ */
 let update = (roomID, gameState) => {
 	let pacmen = gameState.pacmen;
 	let ghosts = gameState.ghosts;

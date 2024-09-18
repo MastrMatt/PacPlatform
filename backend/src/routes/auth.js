@@ -15,8 +15,10 @@ configDotenv();
 const authRouter = Router();
 
 /**
- * Check if a user with the given id exists, return an object with a boolean field : exists indicating if the user exists
- *
+ * Check if a user with the given id exists.
+ * @route GET /api/auth/user/:id
+ * @param {string} id - The user ID to check.
+ * @returns {Object} An object with a boolean field 'exists' indicating if the user exists.
  */
 authRouter.get("/user/:id", async (req, res, next) => {
 	try {
@@ -37,7 +39,13 @@ authRouter.get("/user/:id", async (req, res, next) => {
 });
 
 /**
- * Signup a user with the given username and password passed from the request body and respond with the username and set cookie header for the jwt token
+ * Sign up a new user.
+ * @route POST /api/auth/signup
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.username - The username for the new user.
+ * @param {string} req.body.password - The password for the new user.
+ * @param {string} req.body.imageURL - The image URL for the new user's profile.
+ * @returns {Object} An object containing the new user's username and sets a JWT cookie.
  */
 authRouter.post("/signup", async (req, res, next) => {
 	try {
@@ -72,7 +80,12 @@ authRouter.post("/signup", async (req, res, next) => {
 });
 
 /**
- * Login a user with the given username and password passed from the request body and respond with a jwt token and set cookie header for the jwt token
+ * Log in an existing user.
+ * @route POST /api/auth/login
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.username - The username of the user.
+ * @param {string} req.body.password - The password of the user.
+ * @returns {Object} An object containing the user's username and sets a JWT cookie.
  */
 authRouter.post("/login", async (req, res, next) => {
 	try {
@@ -122,7 +135,9 @@ authRouter.post("/login", async (req, res, next) => {
 });
 
 /**
- * Logout a user by clearing the jwt token cookie
+ * Log out the current user.
+ * @route POST /api/auth/logout
+ * @returns {Object} A message confirming the logout.
  */
 authRouter.post("/logout", (req, res) => {
 	// handle logout here
@@ -130,6 +145,11 @@ authRouter.post("/logout", (req, res) => {
 	return res.json({ message: "Logged out" });
 });
 
+/**
+ * Check if the current user is authenticated.
+ * @route GET /api/auth/checkAuth
+ * @returns {Object} A message confirming authentication.
+ */
 authRouter.get("/checkAuth", cookieJwtAuth, (req, res) => {
 	// if reached here, the user is authenticated by cookieJwtAuth middleware
 	return res.json({ message: "Authenticated" });

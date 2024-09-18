@@ -46,7 +46,12 @@ const serializeUser = (user) => {
 	return rest;
 };
 
-// get all users which name starts with the given string
+/**
+ * Search for users by username prefix.
+ * @route GET /api/users/search/:id
+ * @param {string} id - The prefix to search for in usernames.
+ * @returns {Object} An object containing an array of matching user objects.
+ */
 userRouter.get("/search/:id", async (req, res, next) => {
 	try {
 		const searchString = req.params.id;
@@ -68,7 +73,12 @@ userRouter.get("/search/:id", async (req, res, next) => {
 	}
 });
 
-// get the user object from the database and serialize it before sending it to the client
+/**
+ * Get a user's profile information.
+ * @route GET /api/users/:id
+ * @param {string} id - The username of the user to fetch.
+ * @returns {Object} The user's profile information.
+ */
 userRouter.get("/:id", async (req, res, next) => {
 	try {
 		// if reached here, the user is authenticated by cookieJwtAuth middleware
@@ -89,7 +99,12 @@ userRouter.get("/:id", async (req, res, next) => {
 	}
 });
 
-// get all friend requests for the user
+/**
+ * Get all friend requests for a user.
+ * @route GET /api/users/:id/friendRequests
+ * @param {string} id - The username of the user.
+ * @returns {Object} An object containing an array of friend request user objects.
+ */
 userRouter.get("/:id/friendRequests", async (req, res, next) => {
 	try {
 		const username = req.params.id;
@@ -112,7 +127,14 @@ userRouter.get("/:id/friendRequests", async (req, res, next) => {
 	}
 });
 
-// add a friend request to the user's friend request list
+/**
+ * Send a friend request to another user.
+ * @route POST /api/users/:id/friendRequests
+ * @param {string} id - The username of the user sending the request.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.requestUsername - The username of the user to send the request to.
+ * @returns {Object} A message confirming the friend request was sent.
+ */
 userRouter.post("/:id/friendRequests", async (req, res, next) => {
 	try {
 		const username = req.params.id;
@@ -163,7 +185,13 @@ userRouter.delete("/:id/friendRequests/:requestId", async (req, res, next) => {
 	}
 });
 
-// get the leaderboard for user's friends according to some type
+/**
+ * Get the leaderboard for a user's friends.
+ * @route GET /api/users/:id/friends/leaderboard/:type
+ * @param {string} id - The username of the user.
+ * @param {string} type - The type of leaderboard to fetch.
+ * @returns {Object} An object containing the leaderboard data.
+ */
 userRouter.get("/:id/friends/leaderboard/:type", async (req, res, next) => {
 	try {
 		const username = req.params.id;
