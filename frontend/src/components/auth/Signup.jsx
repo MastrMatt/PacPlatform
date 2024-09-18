@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 
 import { LoaderCircle } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,6 +33,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const Signup = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [showPassword, setShowPassword] = useState(false);
 	const navigate = useNavigate();
 
 	const signUpFormSubmit = async ({ username, password, imageURL }) => {
@@ -86,21 +88,20 @@ const Signup = () => {
 	});
 
 	return (
-		<div className="w-screen h-screen flex justify-center items-center">
-			<Card className=" m-2 flex flex-col gap-4 w-full max-w-xl">
+		<div className="w-full min-h-screen flex justify-center items-center p-4">
+			<Card className="w-full max-w-md">
 				<CardHeader>
-					<CardTitle className="text-2xl">Signup</CardTitle>
-					<CardDescription>
+					<CardTitle className="text-2xl sm:text-3xl">Signup</CardTitle>
+					<CardDescription className="text-sm sm:text-base">
 						Enter your information to create an account
 					</CardDescription>
 				</CardHeader>
 
 				<CardContent>
-					{" "}
 					<Form {...signUpForm}>
 						<form
 							onSubmit={signUpForm.handleSubmit(signUpFormSubmit)}
-							className="flex flex-col gap-2"
+							className="flex flex-col gap-4"
 						>
 							<FormField
 								control={signUpForm.control}
@@ -129,10 +130,23 @@ const Signup = () => {
 										<FormItem>
 											<FormLabel>Password</FormLabel>
 											<FormControl>
-												<Input
-													{...field}
-													type="password"
-												/>
+												<div className="relative">
+													<Input
+														{...field}
+														type={showPassword ? "text" : "password"}
+													/>
+													<button
+														type="button"
+														className="absolute inset-y-0 right-0 pr-3 flex items-center"
+														onClick={() => setShowPassword(!showPassword)}
+													>
+														{showPassword ? (
+															<EyeOff className="h-4 w-4 text-gray-500" />
+														) : (
+															<Eye className="h-4 w-4 text-gray-500" />
+														)}
+													</button>
+												</div>
 											</FormControl>
 											<FormDescription>
 												Should be between 4-20
@@ -164,18 +178,18 @@ const Signup = () => {
 								}}
 							/>
 
-							<Button type="submit">
+							<Button type="submit" className="w-full">
 								{isLoading ? (
-									<LoaderCircle className="w-10 h-10 animate-spin" />
+									<LoaderCircle className="w-6 h-6 animate-spin" />
 								) : (
 									"Signup"
 								)}
 							</Button>
 						</form>
 					</Form>
-					<div className="mt-4 text-center text-sm">
+					<div className="mt-6 text-center text-sm sm:text-base">
 						Already have an account?{" "}
-						<NavLink to="/login" className="underline">
+						<NavLink to="/login" className="underline leading-loose py-1">
 							Log In
 						</NavLink>
 					</div>

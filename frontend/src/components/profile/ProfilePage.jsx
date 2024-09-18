@@ -77,14 +77,15 @@ function ProfilePage() {
 	};
 
 	return user ? (
-		<div className="w-full h-screen flex flex-col items-center justify-evenly md:flex-row gap-10">
+		<div className="w-full min-h-screen p-4 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
 			<Profile user={user} isPersonal={true} />
 			<Leaderboard />
 		</div>
 	) : (
 		<div className="w-full h-screen flex items-center justify-center">
-			<Loader2 className=" w-20 h-20 animate-spin" />
+			<Loader2 className="w-16 h-16 md:w-20 md:h-20 animate-spin" />
 		</div>
 	);
 }
+
 export default ProfilePage;

@@ -13,22 +13,13 @@ import {
 import {
 	Table,
 	TableBody,
-	TableCaption,
 	TableCell,
-	TableFooter,
 	TableHead,
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
 
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -61,10 +52,11 @@ function Leaderboard() {
 	};
 
 	return (
-		<Card className=" h-4/6 w-2/5 rounded-md shadow-2xl shadow-foreground">
-			<CardHeader className="flex flex-row items-center justify-center gap-20 ">
-				<div className="text-center font-bold">Leaderboard</div>
-
+		<Card className="w-full md:w-2/5 max-w-md h-[500px] rounded-md shadow-2xl shadow-foreground flex flex-col">
+			<CardHeader className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 p-4 md:p-6">
+				<div className="text-center font-bold text-lg md:text-xl">
+					Leaderboard
+				</div>
 				<Select onValueChange={handleSelectChange}>
 					<SelectTrigger className="w-[180px]">
 						<SelectValue placeholder="Select filter" />
@@ -84,14 +76,13 @@ function Leaderboard() {
 				</Select>
 			</CardHeader>
 
-			<CardContent className="h-full">
-				<div className="text-center ">Top 10 between Friends:</div>
-
-				<ScrollArea className="h-3/5 w-full rounded-md border">
+			<CardContent className="flex-grow p-4 md:p-6 flex flex-col">
+				<div className="text-center mb-4">Top 10 between Friends:</div>
+				<ScrollArea className="flex-grow w-full rounded-md border">
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Username </TableHead>
+								<TableHead>Username</TableHead>
 								<TableHead>Value</TableHead>
 							</TableRow>
 						</TableHeader>

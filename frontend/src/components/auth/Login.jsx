@@ -40,9 +40,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { Eye, EyeOff } from "lucide-react";
+
 const Login = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [loginError, setLoginError] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
 
 	const navigate = useNavigate();
 
@@ -95,11 +98,13 @@ const Login = () => {
 	};
 
 	return (
-		<div className="w-screen h-screen flex justify-center items-center">
-			<Card className=" mx-2 w-full flex flex-col gap-4 max-w-xl">
+		<div className="w-full min-h-screen flex justify-center items-center p-4">
+			<Card className="w-full max-w-md">
 				<CardHeader>
-					<CardTitle className="text-2xl">Login</CardTitle>
-					<CardDescription>
+					<CardTitle className="text-2xl sm:text-3xl">
+						Login
+					</CardTitle>
+					<CardDescription className="text-sm sm:text-base">
 						Enter your information below to login to your account
 					</CardDescription>
 				</CardHeader>
@@ -115,7 +120,7 @@ const Login = () => {
 					<Form {...loginForm}>
 						<form
 							onSubmit={loginForm.handleSubmit(loginFormSubmit)}
-							className="flex flex-col gap-2"
+							className="flex flex-col gap-4"
 						>
 							<FormField
 								control={loginForm.control}
@@ -141,10 +146,23 @@ const Login = () => {
 										<FormItem>
 											<FormLabel>Password</FormLabel>
 											<FormControl>
-												<Input
-													{...field}
-													type="password"
-												/>
+												<div className="relative">
+													<Input
+														{...field}
+														type={showPassword ? "text" : "password"}
+													/>
+													<button
+														type="button"
+														className="absolute inset-y-0 right-0 pr-3 flex items-center"
+														onClick={() => setShowPassword(!showPassword)}
+													>
+														{showPassword ? (
+															<EyeOff className="h-4 w-4 text-gray-500" />
+														) : (
+															<Eye className="h-4 w-4 text-gray-500" />
+														)}
+													</button>
+												</div>
 											</FormControl>
 											{/* <FormDescription>This is the password</FormDescription> */}
 											<FormMessage />
@@ -153,8 +171,7 @@ const Login = () => {
 								}}
 							/>
 
-							<Button type="submit">
-								{" "}
+							<Button type="submit" className="w-full">
 								{isLoading ? (
 									<>
 										<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
@@ -166,9 +183,9 @@ const Login = () => {
 							</Button>
 						</form>
 					</Form>
-					<div className="mt-4 text-center text-sm">
+					<div className="mt-6 text-center text-sm sm:text-base">
 						Don't have an account?{" "}
-						<NavLink to="/signup" className="underline">
+						<NavLink to="/signup" className="underline leading-loose py-1">
 							Sign up
 						</NavLink>
 					</div>

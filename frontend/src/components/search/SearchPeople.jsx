@@ -156,7 +156,7 @@ export default function SearchPeople() {
 			</Card>
 
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<DialogContent className="sm:max-w-[425px] w-100">
+				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>User Profile</DialogTitle>
 						<DialogDescription>
