@@ -9,4 +9,4 @@ Notes:
 -The game is made over websockets using the socketio library, fully realtime pacman
 -Never expect erros as a valid response to a valid query, leads to difficulties debugging. Errors sole purpose should be a signal that an unexpected event occured
 
-// !! TODO: Leaderboard, Friend Requests, Game state updates, and some client id logic
+// !! TODO: e2e tests, documentation for backend / (some for frontend)
