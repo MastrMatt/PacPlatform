@@ -5,8 +5,18 @@ built using LERN stack ([liteDB](https://github.com/MastrMatt/liteDB), Express.j
 
 Notes:
 
+-Made using the db I made, liteDB
 -The API is restful
--The game is made over websockets using the socketio library, fully realtime pacman
--Never expect erros as a valid response to a valid query, leads to difficulties debugging. Errors sole purpose should be a signal that an unexpected event occured
+-Along with the http server that API requests are made to, the backend also has the capability of handling websocket connections, this allows the pacman game to be a multiplayer real time game
+-The game is made over websockets using the socketio library, fully realtime pacman multiplater game
 
-// !! TODO: documentation for backend / (some for frontend)
+-Acts also as a social platform, therefore supports:
+-Adding friends and comparing stats with friends
+-Searching and viewing other users profiles
+
+-e2e tests made using Cypress
+-JSDOC was used for documentation of the backend
+
+-Some future considerations:
+-Add music for the pacman game and make the game more complete (ex: cherries, teleportation, etc.)
+-Add more games

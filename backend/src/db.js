@@ -14,9 +14,12 @@ let startClient = async () => {
 	} else {
 		db = createClient();
 
+		// force to flush the output
+		console.log(process.env.DB_HOST, process.env.DB_PORT);
+
 		await db.connect({
-			host: "localhost",
-			port: process.env.LITEDB_PORT || 9255,
+			host: process.env.DB_HOST || "localhost",
+			port: parseInt(process.env.DB_PORT) || 9255,
 		});
 	}
 };
