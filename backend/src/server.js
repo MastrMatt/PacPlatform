@@ -36,7 +36,7 @@ const app = express();
 
 const corsOptions = {
 	origin: [
-		"http://pacplatform.apps.mastrmatt.com",
+		"https://pacplatform.apps.mastrmatt.com",
 		"http://localhost:5173",
 		"http://localhost:5174",
 		"http://localhost:5175",
