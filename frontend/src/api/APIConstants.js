@@ -1,5 +1,5 @@
-const BACKEND_URL = "http://srv-captain--pacplatform-backend"; // URL of the backend
-const API_URL = "http://srv-captain--pacplatform-backend/api";
+const BACKEND_URL = "http://pacplatform-backend.apps.mastrmatt.com"; // URL of the backend
+const API_URL = "http://pacplatform-backend.apps.mastrmatt.com/api";
 
 const SIGNUP_URL = `/auth/signup`;
 const LOGIN_URL = `/auth/login`;
