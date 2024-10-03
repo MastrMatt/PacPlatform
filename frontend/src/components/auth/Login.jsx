@@ -87,7 +87,9 @@ const Login = () => {
 					"Incorrect username or password. Please try again."
 				);
 			} else {
-				setLoginError("An error occurred. Please try again later.");
+				setLoginError(
+					"An error occurred. Please refresh the page and try again later."
+				);
 			}
 
 			console.error(error);
@@ -149,12 +151,20 @@ const Login = () => {
 												<div className="relative">
 													<Input
 														{...field}
-														type={showPassword ? "text" : "password"}
+														type={
+															showPassword
+																? "text"
+																: "password"
+														}
 													/>
 													<button
 														type="button"
 														className="absolute inset-y-0 right-0 pr-3 flex items-center"
-														onClick={() => setShowPassword(!showPassword)}
+														onClick={() =>
+															setShowPassword(
+																!showPassword
+															)
+														}
 													>
 														{showPassword ? (
 															<EyeOff className="h-4 w-4 text-gray-500" />
@@ -185,7 +195,10 @@ const Login = () => {
 					</Form>
 					<div className="mt-6 text-center text-sm sm:text-base">
 						Don't have an account?{" "}
-						<NavLink to="/signup" className="underline leading-loose py-1">
+						<NavLink
+							to="/signup"
+							className="underline leading-loose py-1"
+						>
 							Sign up
 						</NavLink>
 					</div>
