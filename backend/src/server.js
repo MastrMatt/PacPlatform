@@ -393,7 +393,7 @@ let update = (roomID, gameState) => {
 			elimPacmen: gameState.elimPacmen,
 		});
 	} else if (foodCount == 0) {
-		io.to(roomID).emit("gameOver", "win", {
+		io.to(roomID).emit("gameOver", {
 			status: "win",
 			elimPacmen: gameState.elimPacmen,
 		});
