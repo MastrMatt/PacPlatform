@@ -4,7 +4,6 @@ services:
         ports:
             - "9255:9255"
 
-
     backend:
         build: ./backend
         ports:
