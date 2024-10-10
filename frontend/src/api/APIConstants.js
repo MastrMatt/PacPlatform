@@ -1,5 +1,5 @@
-const BACKEND_URL = "http://localhost:42069"; // URL of the backend
-const API_URL = "http://localhost:42069/api";
+const BACKEND_URL = "https://pacplatform-backend.apps.mastrmatt.com"; // URL of the backend
+const API_URL = "https://pacplatform-backend.apps.mastrmatt.com/api";
 
 const SIGNUP_URL = `/auth/signup`;
 const LOGIN_URL = `/auth/login`;
