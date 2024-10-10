@@ -58,11 +58,11 @@ function Game({ socket, setStartGame, gameType, roomID, numPlayers }) {
 			}
 		});
 
-		socket.on("gameOver", ({ status, elimPacmen }) => {
+		socket.on("gameOver", ({ status, displayPacmen }) => {
 			socket.disconnect();
 			socket = null;
 			setGameOver(true);
-			drawOver(status, elimPacmen);
+			drawOver(status, displayPacmen);
 		});
 
 		const createRect = (ctx, x, y, width, height, color) => {
@@ -70,7 +70,7 @@ function Game({ socket, setStartGame, gameType, roomID, numPlayers }) {
 			ctx.fillRect(x, y, width, height);
 		};
 
-		const drawOver = (status, elimPacmen) => {
+		const drawOver = (status, displayPacmen) => {
 			let canvas = canvasRef.current;
 			let ctx = canvas.getContext("2d");
 
@@ -80,12 +80,12 @@ function Game({ socket, setStartGame, gameType, roomID, numPlayers }) {
 			ctx.fillStyle = "white";
 			ctx.fillText(`Pacmen ${status}!`, 140, 120);
 
-			elimPacmen = Object.entries(elimPacmen).sort(
+			displayPacmen = Object.entries(displayPacmen).sort(
 				(a, b) => b[1].score - a[1].score
 			);
 
 			let y = 240;
-			for (let i of elimPacmen) {
+			for (let i of displayPacmen) {
 				ctx.fillText(`${i[0]} scored: ${i[1].score}`, 20, y);
 				y += 20;
 			}

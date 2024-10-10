@@ -390,12 +390,12 @@ let update = (roomID, gameState) => {
 	if (pacmenCount == 0) {
 		io.to(roomID).emit("gameOver", {
 			status: "lose",
-			elimPacmen: gameState.elimPacmen,
+			displayPacmen: gameState.elimPacmen,
 		});
 	} else if (foodCount == 0) {
 		io.to(roomID).emit("gameOver", {
 			status: "win",
-			elimPacmen: gameState.elimPacmen,
+			displayPacmen: gameState.pacmen,
 		});
 	}
 
