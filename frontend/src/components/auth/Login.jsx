@@ -88,7 +88,7 @@ const Login = () => {
 				);
 			} else {
 				setLoginError(
-					"An error occurred. Please refresh the page and try again later."
+					"An error occurred. Please refresh the page and immediately try again. (Sometimes this happens because the backend server is slow)"
 				);
 			}
 
