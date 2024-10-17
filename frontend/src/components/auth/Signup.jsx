@@ -26,6 +26,8 @@ import {
 
 import { LoaderCircle } from "lucide-react";
 import { Eye, EyeOff } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -34,18 +36,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const Signup = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
+	const [signupError, setSignupError] = useState("");
 	const navigate = useNavigate();
 
 	const signUpFormSubmit = async ({ username, password, imageURL }) => {
 		setIsLoading(true);
+		setSignupError(""); // Clear any previous errors
 
 		try {
 			await AuthService.signup(username, password, imageURL);
-
 			// navigate to the login page
 			navigate("/login");
 		} catch (error) {
-			console.error(error.response.data);
+			console.error(error.response?.data);
+			// Set a generic error message
+			setSignupError(
+				"An error occurred. Please refresh the page and try again. (This may happen if the server is slow to respond)"
+			);
+			signUpForm.reset(); // Reset the form
+		} finally {
+			setIsLoading(false);
 		}
 	};
 	const signUpFormSchema = z.object({
@@ -98,6 +108,13 @@ const Signup = () => {
 				</CardHeader>
 
 				<CardContent>
+					{signupError && (
+						<Alert variant="destructive" className="mb-4">
+							<AlertCircle className="h-4 w-4" />
+							<AlertTitle>Error</AlertTitle>
+							<AlertDescription>{signupError}</AlertDescription>
+						</Alert>
+					)}
 					<Form {...signUpForm}>
 						<form
 							onSubmit={signUpForm.handleSubmit(signUpFormSubmit)}
