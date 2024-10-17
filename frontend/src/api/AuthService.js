@@ -28,7 +28,11 @@ const AuthService = {
 				return true;
 			}
 		} catch (error) {
-			console.error(error.response.data);
+			// check if error was Err Connection Refused
+			if (error.message === "ERR_CONNECTION_REFUSED") {
+				// alert("Connection Refused"); so user can see
+				return true;
+			}
 		}
 	},
 

@@ -45,7 +45,8 @@ const Signup = () => {
 			// navigate to the login page
 			navigate("/login");
 		} catch (error) {
-			console.error(error.response.data);
+			console.error(error);
+			signUpForm.reset();
 		}
 	};
 	const signUpFormSchema = z.object({
@@ -91,7 +92,9 @@ const Signup = () => {
 		<div className="w-full min-h-screen flex justify-center items-center p-4">
 			<Card className="w-full max-w-md">
 				<CardHeader>
-					<CardTitle className="text-2xl sm:text-3xl">Signup</CardTitle>
+					<CardTitle className="text-2xl sm:text-3xl">
+						Signup
+					</CardTitle>
 					<CardDescription className="text-sm sm:text-base">
 						Enter your information to create an account
 					</CardDescription>
@@ -133,12 +136,20 @@ const Signup = () => {
 												<div className="relative">
 													<Input
 														{...field}
-														type={showPassword ? "text" : "password"}
+														type={
+															showPassword
+																? "text"
+																: "password"
+														}
 													/>
 													<button
 														type="button"
 														className="absolute inset-y-0 right-0 pr-3 flex items-center"
-														onClick={() => setShowPassword(!showPassword)}
+														onClick={() =>
+															setShowPassword(
+																!showPassword
+															)
+														}
 													>
 														{showPassword ? (
 															<EyeOff className="h-4 w-4 text-gray-500" />
@@ -189,7 +200,10 @@ const Signup = () => {
 					</Form>
 					<div className="mt-6 text-center text-sm sm:text-base">
 						Already have an account?{" "}
-						<NavLink to="/login" className="underline leading-loose py-1">
+						<NavLink
+							to="/login"
+							className="underline leading-loose py-1"
+						>
 							Log In
 						</NavLink>
 					</div>
